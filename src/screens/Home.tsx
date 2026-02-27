@@ -73,10 +73,38 @@ export default function Home({ jds, onNavigate }: HomeProps) {
         : 0;
 
     const metrics = [
-        { icon: <Briefcase size={16} />, label: 'Open Roles', value: openRoles, sub: 'live, screening, or interview' },
-        { icon: <Layers size={16} />, label: 'Roles in Screening', value: rolesInScreening, sub: 'active screening pipelines' },
-        { icon: <CheckCircle size={16} />, label: 'Closed Roles', value: rolesClosed, sub: 'last 30 days' },
-        { icon: <Clock size={16} />, label: 'Avg Time to Screen', value: `${avgTime}d`, sub: 'days · screening stage' },
+        {
+            icon: <Clock size={16} />,
+            label: 'Avg Time to Shortlist',
+            value: '4.2d',
+            sub: '7-Day Avg',
+            trend: { val: '70%', down: true, label: 'vs prev week' }
+        },
+        {
+            icon: <Briefcase size={16} />,
+            label: 'Open for Application',
+            value: openRoles,
+            sub: 'Current'
+        },
+        {
+            icon: <Layers size={16} />,
+            label: 'Roles in Screening',
+            value: rolesInScreening,
+            sub: 'Current'
+        },
+        {
+            icon: <Search size={16} />,
+            label: 'Resumes Screened / Day',
+            value: '128',
+            sub: '7-Day Avg',
+            trend: { val: '20%', down: false, label: 'vs prev week' }
+        },
+        {
+            icon: <CheckCircle size={16} />,
+            label: 'Roles Closed',
+            value: rolesClosed,
+            sub: 'Last 30 days'
+        },
     ];
 
     const filtered = useMemo(() => {
@@ -119,21 +147,43 @@ export default function Home({ jds, onNavigate }: HomeProps) {
                 {/* Page Header */}
                 <div style={{ marginBottom: 32 }}>
                     <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 4, letterSpacing: '-0.03em' }}>Recruiter Overview</h1>
-                    <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Manage your active roles and track screening progress.</p>
+                    <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Operational awareness and active pipeline management.</p>
                 </div>
 
                 {/* Metric Strip */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 36 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, marginBottom: 36 }}>
                     {metrics.map(m => (
-                        <div key={m.label} className="card metric-card" style={{ padding: '18px 22px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10, color: 'var(--text-muted)' }}>
-                                {m.icon}
-                                <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{m.label}</span>
+                        <div key={m.label} className="card metric-card" style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12, color: 'var(--text-muted)' }}>
+                                    <div style={{ color: 'var(--accent-purple)' }}>{m.icon}</div>
+                                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{m.label}</span>
+                                </div>
+                                <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.03em', lineHeight: 1, color: 'var(--text-primary)', marginBottom: 6 }}>
+                                    {m.value}
+                                </div>
                             </div>
-                            <div style={{ fontSize: 30, fontWeight: 800, fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.03em', lineHeight: 1, color: 'var(--text-primary)' }}>
-                                {m.value}
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{m.sub}</span>
+                                    {m.trend && (
+                                        <span style={{
+                                            fontSize: 10,
+                                            fontWeight: 700,
+                                            padding: '2px 6px',
+                                            borderRadius: 4,
+                                            background: m.trend.down ? 'hsla(0,100%,50%,0.08)' : 'hsla(145,100%,40%,0.08)',
+                                            color: m.trend.down ? 'hsl(0,80%,55%)' : 'hsl(145,100%,35%)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2
+                                        }}>
+                                            {m.trend.down ? '↓' : '↑'} {m.trend.val}
+                                        </span>
+                                    )}
+                                </div>
+                                {m.trend && <div style={{ fontSize: 9.5, color: 'var(--text-muted)', marginTop: 3 }}>{m.trend.label}</div>}
                             </div>
-                            <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 5 }}>{m.sub}</div>
                         </div>
                     ))}
                 </div>
@@ -141,13 +191,13 @@ export default function Home({ jds, onNavigate }: HomeProps) {
                 {/* Roles Section */}
                 <div className="card" style={{ overflow: 'hidden' }}>
                     {/* Filters bar */}
-                    <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: 'var(--bg-secondary)' }}>
+                    <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: 'var(--bg-secondary)' }}>
                         <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
                             <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                             <input
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                placeholder="Search roles..."
+                                placeholder="Search roles by title or department..."
                                 style={{ width: '100%', paddingLeft: 32, paddingRight: 12, paddingTop: 8, paddingBottom: 8, border: '1px solid var(--border-subtle)', borderRadius: 8, fontSize: 13, background: 'var(--bg-card)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'Inter, sans-serif' }}
                                 id="home-search"
                             />
@@ -155,78 +205,84 @@ export default function Home({ jds, onNavigate }: HomeProps) {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)' }}>
                             <Filter size={13} />
                         </div>
-                        <select value={dept} onChange={e => setDept(e.target.value)} style={selectStyle} id="home-dept-filter">
+                        <select value={dept} onChange={e => setDept(e.target.value)} style={{ ...selectStyle, minWidth: 140 }} id="home-dept-filter">
                             {ALL_DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
                         </select>
-                        <select value={loc} onChange={e => setLoc(e.target.value)} style={selectStyle} id="home-loc-filter">
+                        <select value={loc} onChange={e => setLoc(e.target.value)} style={{ ...selectStyle, minWidth: 140 }} id="home-loc-filter">
                             {ALL_LOCATIONS.map(l => <option key={l} value={l}>{l}</option>)}
                         </select>
-                        <select value={stage} onChange={e => setStage(e.target.value as LifecycleStage | '')} style={selectStyle} id="home-stage-filter">
+                        <select value={stage} onChange={e => setStage(e.target.value as LifecycleStage | '')} style={{ ...selectStyle, minWidth: 130 }} id="home-stage-filter">
                             {ALL_STAGES.map(s => <option key={s} value={s}>{STAGE_FILTER_LABELS[s]}</option>)}
                         </select>
-                        <div style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>
-                            {filtered.length} role{filtered.length !== 1 ? 's' : ''}
+                        <div style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>
+                            {filtered.length} active roles
                         </div>
                     </div>
 
                     {/* Table */}
                     <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
-                                <tr style={{ background: 'var(--bg-secondary)' }}>
-                                    {['Role', 'Department', 'Location', 'Stage', 'Applications', 'Strong', 'Shortlisted', 'Days Open', ''].map((col, i) => (
-                                        <th key={col + i} style={{
-                                            padding: '10px 18px',
-                                            fontSize: 11, fontWeight: 700,
+                                <tr style={{ background: 'var(--bg-card)' }}>
+                                    {[
+                                        { label: 'Role', width: '25%' },
+                                        { label: 'Department', width: '15%' },
+                                        { label: 'Location', width: '15%' },
+                                        { label: 'Stage', width: '12%' },
+                                        { label: 'Apps', width: '8%', align: 'right' },
+                                        { label: 'Strong', width: '8%', align: 'right' },
+                                        { label: 'Days Open', width: '8%', align: 'right' },
+                                        { label: 'Next Action', width: '15%', align: 'right' }
+                                    ].map((col, i) => (
+                                        <th key={col.label} style={{
+                                            padding: '14px 24px',
+                                            fontSize: 10.5, fontWeight: 700,
                                             color: 'var(--text-muted)',
-                                            textAlign: i >= 4 && i <= 7 ? 'right' : 'left',
-                                            textTransform: 'uppercase', letterSpacing: '0.05em',
+                                            textAlign: col.align === 'right' ? 'right' : 'left',
+                                            textTransform: 'uppercase', letterSpacing: '0.08em',
                                             borderBottom: '1px solid var(--border-subtle)',
-                                            whiteSpace: 'nowrap',
+                                            width: col.width,
                                         }}>
-                                            {col}
+                                            {col.label}
                                         </th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {filtered.length === 0 ? (
-                                    <tr><td colSpan={9} style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)', fontSize: 14 }}>No roles match your filters.</td></tr>
+                                    <tr><td colSpan={8} style={{ textAlign: 'center', padding: '64px', color: 'var(--text-muted)', fontSize: 14, background: 'var(--bg-primary)' }}>No roles found matching your criteria.</td></tr>
                                 ) : filtered.map((jd, i) => (
                                     <tr
                                         key={jd.id}
                                         className="table-row"
                                         style={{ borderBottom: i < filtered.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}
                                     >
-                                        <td style={{ padding: '13px 18px' }}>
-                                            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{jd.title}</div>
-                                            <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 2 }}>
-                                                {jd.experienceMin}–{jd.experienceMax}y
+                                        <td style={{ padding: '16px 24px' }}>
+                                            <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>{jd.title}</div>
+                                            <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
+                                                Experience: {jd.experienceMin}–{jd.experienceMax}y
                                             </div>
                                         </td>
-                                        <td style={{ padding: '13px 18px', fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{jd.department}</td>
-                                        <td style={{ padding: '13px 18px', fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{jd.location}</td>
-                                        <td style={{ padding: '13px 18px' }}>
-                                            <span className={STAGE_BADGE_CLASS[jd.status]} style={{ fontSize: 11 }}>
+                                        <td style={{ padding: '16px 24px', fontSize: 13, color: 'var(--text-secondary)' }}>{jd.department}</td>
+                                        <td style={{ padding: '16px 24px', fontSize: 13, color: 'var(--text-secondary)' }}>{jd.location}</td>
+                                        <td style={{ padding: '16px 24px' }}>
+                                            <span className={STAGE_BADGE_CLASS[jd.status]} style={{ fontSize: 10.5, padding: '3px 8px' }}>
                                                 {STAGE_DISPLAY[jd.status]}
                                             </span>
                                         </td>
-                                        <td style={{ padding: '13px 18px', fontSize: 13, fontWeight: 600, textAlign: 'right', fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
-                                            {jd.applicationCount ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                                        <td style={{ padding: '16px 24px', fontSize: 13, fontWeight: 700, textAlign: 'right', fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+                                            {jd.applicationCount ?? '—'}
                                         </td>
-                                        <td style={{ padding: '13px 18px', fontSize: 13, fontWeight: 600, color: 'var(--strong-text)', textAlign: 'right', fontFamily: 'Outfit, sans-serif' }}>
-                                            {jd.strongCount ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                                        <td style={{ padding: '16px 24px', fontSize: 13, fontWeight: 700, color: 'var(--strong-text)', textAlign: 'right', fontFamily: 'Outfit, sans-serif' }}>
+                                            {jd.strongCount ?? '—'}
                                         </td>
-                                        <td style={{ padding: '13px 18px', fontSize: 13, fontWeight: 600, color: 'var(--accent-blue)', textAlign: 'right', fontFamily: 'Outfit, sans-serif' }}>
-                                            {jd.shortlistedCount ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                                        </td>
-                                        <td style={{ padding: '13px 18px', fontSize: 13, color: 'var(--text-muted)', textAlign: 'right' }}>
+                                        <td style={{ padding: '16px 24px', fontSize: 13, color: 'var(--text-muted)', textAlign: 'right' }}>
                                             {jd.daysOpen != null ? `${jd.daysOpen}d` : '—'}
                                         </td>
-                                        <td style={{ padding: '13px 18px', textAlign: 'right' }}>
+                                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
                                             <button
                                                 className="btn-primary"
-                                                style={{ fontSize: 12, padding: '6px 14px' }}
+                                                style={{ fontSize: 12, padding: '7px 16px', fontWeight: 600 }}
                                                 onClick={() => handleRowCTA(jd)}
                                                 id={`home-cta-${jd.id}`}
                                             >

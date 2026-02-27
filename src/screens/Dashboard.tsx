@@ -3,7 +3,6 @@ import { useState, useMemo } from 'react';
 import { Star, ArrowLeft, Search, X, LayoutList, Columns2, ArrowRight, CheckSquare } from 'lucide-react';
 import type { Candidate, Bucket } from '../types';
 import VirtualBucket from '../components/VirtualBucket';
-import ScoreRing from '../components/ScoreRing';
 
 interface DashboardProps {
     candidates: Candidate[];
@@ -25,6 +24,10 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
     const [bucketFilter, setBucketFilter] = useState<Bucket | ''>('');
     const [minScore, setMinScore] = useState(0);
     const [minExp, setMinExp] = useState(0);
+    const [seniority, setSeniority] = useState('');
+    const [domain, setDomain] = useState('');
+    const [edu, setEdu] = useState('');
+    const [referralOnly, setReferralOnly] = useState(false);
     const [view, setView] = useState<'list' | 'bucket'>('list');
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [showShortlistModal, setShowShortlistModal] = useState(false);
@@ -72,10 +75,14 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                 const matchScore = c.compositeScore >= minScore;
                 const matchExp = c.yearsOfExperience >= minExp;
                 const matchBucket = !bucketFilter || (c.overriddenBucket ?? c.bucket) === bucketFilter;
-                return matchSearch && matchScore && matchExp && matchBucket;
+                const matchSeniority = !seniority || c.seniority === seniority;
+                const matchDomain = !domain || c.domain === domain;
+                const matchEdu = !edu || c.education === edu;
+                const matchReferral = !referralOnly || c.isReferral;
+                return matchSearch && matchScore && matchExp && matchBucket && matchSeniority && matchDomain && matchEdu && matchReferral;
             })
             .sort((a, b) => b.compositeScore - a.compositeScore),
-        [candidates, search, minScore, minExp, bucketFilter]
+        [candidates, search, minScore, minExp, bucketFilter, seniority, domain, edu, referralOnly]
     );
 
     const getBucketCandidates = (bucket: Bucket) => filteredCandidates.filter(c => (c.overriddenBucket ?? c.bucket) === bucket);
@@ -87,24 +94,13 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
     const pctStrong = candidates.length ? Math.round((strongCount / candidates.length) * 100) : 0;
     const pctPotential = candidates.length ? Math.round((potentialCount / candidates.length) * 100) : 0;
 
-    const filterPillStyle: React.CSSProperties = {
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '6px 12px',
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 8,
-        fontSize: 12.5,
-        color: 'var(--text-secondary)',
-        fontFamily: 'Inter, sans-serif',
-    };
-
     const selectStyle: React.CSSProperties = {
         padding: '6px 28px 6px 10px',
         background: 'var(--bg-card)',
         border: '1px solid var(--border-subtle)',
         borderRadius: 8,
         color: 'var(--text-primary)',
-        fontSize: 13,
+        fontSize: 12.5,
         fontFamily: 'Inter, sans-serif',
         outline: 'none',
         cursor: 'pointer',
@@ -112,11 +108,12 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'right 8px center',
+        minWidth: 100,
     };
 
     return (
         <div className="screen-fade" style={{ minHeight: 'calc(100vh - 60px)', padding: '28px 36px 80px', background: 'var(--bg-primary)' }}>
-            <div style={{ maxWidth: 1320, margin: '0 auto' }}>
+            <div style={{ maxWidth: 1380, margin: '0 auto' }}>
 
                 {/* Header */}
                 <div style={{
@@ -129,7 +126,7 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                             <ArrowLeft size={16} />
                         </button>
                         <div>
-                            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>Screening</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>Screening Dashboard</div>
                             <h1 style={{ fontSize: 17, marginTop: 1, fontWeight: 800 }}>{roleName || 'Senior Full-Stack Engineer'}</h1>
                         </div>
                     </div>
@@ -139,12 +136,10 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                                 ✓ Candidates shortlisted
                             </div>
                         )}
-                        {shortlistedCount > 0 && (
-                            <button className="btn-primary" onClick={onProceedToShortlist} style={{ fontSize: 13, padding: '8px 18px' }} id="proceed-shortlist-btn">
-                                <Star size={13} />
-                                Review Shortlist ({shortlistedCount}) <ArrowRight size={13} />
-                            </button>
-                        )}
+                        <button className="btn-primary" onClick={onProceedToShortlist} style={{ fontSize: 13, padding: '8px 18px', opacity: shortlistedCount === 0 ? 0.6 : 1 }} disabled={shortlistedCount === 0} id="proceed-shortlist-btn">
+                            <Star size={13} />
+                            Shortlist Review ({shortlistedCount}) <ArrowRight size={13} />
+                        </button>
                     </div>
                 </div>
 
@@ -152,9 +147,9 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 22 }}>
                     {[
                         { label: 'Total Applications', value: candidates.length, color: undefined },
-                        { label: '% Strong', value: `${pctStrong}%`, color: 'var(--strong-text)' },
+                        { label: '% Strong Match', value: `${pctStrong}%`, color: 'var(--strong-text)' },
                         { label: '% Potential', value: `${pctPotential}%`, color: 'var(--potential-text)' },
-                        { label: 'Avg Score', value: `${avgScore}%`, color: 'var(--accent-purple)' },
+                        { label: 'Avg AI Score', value: `${avgScore}%`, color: 'var(--accent-purple)' },
                     ].map(stat => (
                         <div key={stat.label} className="card metric-card" style={{ padding: '14px 18px' }}>
                             <div style={{ fontSize: 24, fontWeight: 800, fontFamily: 'Outfit, sans-serif', color: stat.color || 'var(--text-primary)', letterSpacing: '-0.02em' }}>{stat.value}</div>
@@ -164,13 +159,13 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                 </div>
 
                 {/* Filter Bar */}
-                <div style={{ display: 'flex', gap: 8, marginBottom: 18, alignItems: 'center', flexWrap: 'wrap', padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 10 }}>
-                    <div style={{ position: 'relative', width: 240 }}>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 18, alignItems: 'center', flexWrap: 'wrap', padding: '12px 20px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 12 }}>
+                    <div style={{ position: 'relative', width: 200 }}>
                         <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                         <input
                             className="input-field"
-                            style={{ paddingLeft: 32, paddingTop: 6, paddingBottom: 6, fontSize: 13 }}
-                            placeholder="Search candidates, skills..."
+                            style={{ paddingLeft: 32, paddingTop: 6, paddingBottom: 6, fontSize: 12.5 }}
+                            placeholder="Search name, skills..."
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             id="dashboard-search"
@@ -179,48 +174,59 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
 
                     <select value={bucketFilter} onChange={e => setBucketFilter(e.target.value as Bucket | '')} style={selectStyle} id="bucket-filter">
                         <option value="">All Buckets</option>
-                        <option value="strong">Strong</option>
+                        <option value="strong">Strong Match</option>
                         <option value="potential">Potential</option>
-                        <option value="low">Limited Alignment</option>
+                        <option value="low">Limited</option>
                     </select>
 
-                    <div style={filterPillStyle}>
-                        <span style={{ whiteSpace: 'nowrap', fontWeight: 600, color: 'var(--text-muted)', fontSize: 12 }}>Score ≥ {minScore}%</span>
-                        <input type="range" min="0" max="100" value={minScore} onChange={e => setMinScore(Number(e.target.value))}
-                            style={{ width: 80, accentColor: 'var(--accent-purple)', cursor: 'pointer' }} />
+                    <select value={seniority} onChange={e => setSeniority(e.target.value)} style={selectStyle} id="seniority-filter">
+                        <option value="">Seniority</option>
+                        {['Entry', 'Mid', 'Senior', 'Lead', 'Director'].map(s => <option key={s}>{s}</option>)}
+                    </select>
+
+                    <select value={domain} onChange={e => setDomain(e.target.value)} style={selectStyle} id="domain-filter">
+                        <option value="">Domain</option>
+                        {['Fintech', 'SaaS', 'Healthcare', 'E-commerce', 'EdTech'].map(d => <option key={d}>{d}</option>)}
+                    </select>
+
+                    <select value={edu} onChange={e => setEdu(e.target.value)} style={selectStyle} id="edu-filter">
+                        <option value="">Education</option>
+                        {['Bachelors', 'Masters', 'PhD'].map(e => <option key={e}>{e}</option>)}
+                    </select>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px', background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Exp ≥ {minExp}y</span>
+                        <input type="range" min="0" max="15" value={minExp} onChange={e => setMinExp(Number(e.target.value))} style={{ width: 60, accentColor: 'var(--accent-purple)' }} />
                     </div>
 
-                    <div style={filterPillStyle}>
-                        <span style={{ whiteSpace: 'nowrap', fontWeight: 600, color: 'var(--text-muted)', fontSize: 12 }}>Exp ≥ {minExp}y</span>
-                        <input type="range" min="0" max="15" value={minExp} onChange={e => setMinExp(Number(e.target.value))}
-                            style={{ width: 60, accentColor: 'var(--accent-purple)', cursor: 'pointer' }} />
-                    </div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer', marginLeft: 4 }}>
+                        <input type="checkbox" checked={referralOnly} onChange={e => setReferralOnly(e.target.checked)} style={{ accentColor: 'var(--accent-purple)' }} />
+                        Referral Only
+                    </label>
 
-                    {(search || bucketFilter || minScore > 0 || minExp > 0) && (
-                        <button className="btn-ghost" style={{ fontSize: 12, color: 'var(--accent-red)' }}
-                            onClick={() => { setSearch(''); setBucketFilter(''); setMinScore(0); setMinExp(0); }}>
-                            <X size={12} /> Clear
+                    {(search || bucketFilter || seniority || domain || edu || minExp > 0 || referralOnly) && (
+                        <button className="btn-ghost" style={{ fontSize: 11.5, color: 'var(--accent-red)', height: 32 }}
+                            onClick={() => { setSearch(''); setBucketFilter(''); setSeniority(''); setDomain(''); setEdu(''); setMinScore(0); setMinExp(0); setReferralOnly(false); }}>
+                            <X size={12} /> Clear Filters
                         </button>
                     )}
 
-                    <div style={{ marginLeft: 'auto', display: 'flex', gap: 3, background: 'var(--bg-secondary)', padding: 3, borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
-                        {([['list', 'Ranked List', LayoutList], ['bucket', 'Buckets', Columns2]] as const).map(([v, label, Icon]) => (
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: 4, background: 'var(--bg-secondary)', padding: 4, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
+                        {([['list', LayoutList], ['bucket', Columns2]] as const).map(([v, Icon]) => (
                             <button
                                 key={v}
                                 onClick={() => setView(v)}
                                 style={{
-                                    padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12.5,
+                                    width: 32, height: 32, borderRadius: 7, border: 'none', cursor: 'pointer',
                                     background: view === v ? 'var(--bg-card)' : 'transparent',
                                     color: view === v ? 'var(--accent-purple)' : 'var(--text-muted)',
-                                    fontWeight: view === v ? 600 : 500,
-                                    display: 'flex', alignItems: 'center', gap: 5,
-                                    transition: 'all 120ms ease',
-                                    fontFamily: 'Inter, sans-serif',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    transition: 'all 150ms ease',
                                     boxShadow: view === v ? 'var(--shadow-sm)' : 'none',
                                 }}
                                 id={`view-${v}-btn`}
                             >
-                                <Icon size={13} /> {label}
+                                <Icon size={14} />
                             </button>
                         ))}
                     </div>
@@ -231,8 +237,8 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                     <div className="card" style={{ overflow: 'hidden' }}>
                         <div style={{
                             display: 'grid',
-                            gridTemplateColumns: '36px 56px 1fr 100px 74px 80px 90px 100px',
-                            alignItems: 'center', padding: '10px 18px',
+                            gridTemplateColumns: '40px 50px 70px 1.5fr 1fr 100px 100px 100px',
+                            alignItems: 'center', padding: '12px 24px',
                             background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-subtle)',
                         }}>
                             <div>
@@ -242,12 +248,16 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                                     style={{ cursor: 'pointer', accentColor: 'var(--accent-purple)' }}
                                 />
                             </div>
-                            {['Rank', 'Candidate', 'Bucket', 'Score', 'Experience', 'Location', ''].map((h, i) => (
-                                <div key={h + i} style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</div>
-                            ))}
+                            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Rank</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Score</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Candidate</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Bucket</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Exp</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Location</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'right' }}>Actions</div>
                         </div>
                         {filteredCandidates.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)', fontSize: 14 }}>No candidates match current filters.</div>
+                            <div style={{ textAlign: 'center', padding: '72px', color: 'var(--text-muted)', fontSize: 14 }}>No candidates match current scope.</div>
                         ) : (
                             filteredCandidates.map((c, i) => {
                                 const activeBucket = c.overriddenBucket ?? c.bucket;
@@ -257,10 +267,10 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                                         key={c.id}
                                         className="table-row"
                                         style={{
-                                            display: 'grid', gridTemplateColumns: '36px 56px 1fr 100px 74px 80px 90px 100px',
-                                            alignItems: 'center', padding: '10px 18px',
+                                            display: 'grid', gridTemplateColumns: '40px 50px 70px 1.5fr 1fr 100px 100px 100px',
+                                            alignItems: 'center', padding: '14px 24px',
                                             borderBottom: i < filteredCandidates.length - 1 ? '1px solid var(--border-subtle)' : 'none',
-                                            background: isSelected ? 'var(--accent-purple-dim)' : undefined,
+                                            background: isSelected ? 'hsla(262,72%,52%,0.03)' : undefined,
                                             cursor: 'pointer',
                                         }}
                                         onClick={() => onSelectCandidate(c.id)}
@@ -269,27 +279,28 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                                         <div onClick={e => { e.stopPropagation(); toggleSelect(c.id); }}>
                                             <input type="checkbox" checked={isSelected} readOnly style={{ cursor: 'pointer', accentColor: 'var(--accent-purple)' }} />
                                         </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                                            <ScoreRing score={c.compositeScore} size={38} strokeWidth={3.5} showLabel={false} />
-                                            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>#{i + 1}</span>
+                                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>#{i + 1}</div>
+                                        <div>
+                                            <div style={{ fontSize: 14, fontWeight: 800, fontFamily: 'Outfit, sans-serif', color: activeBucket === 'strong' ? 'var(--strong-text)' : activeBucket === 'potential' ? 'var(--potential-text)' : 'var(--text-secondary)' }}>
+                                                {c.compositeScore}%
+                                            </div>
                                         </div>
                                         <div style={{ minWidth: 0 }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                                                <span style={{ fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>{c.name}</span>
-                                                {c.isShortlisted && <Star size={11} fill="var(--accent-amber)" color="var(--accent-amber)" />}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
+                                                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{c.name}</span>
+                                                {c.isReferral && (
+                                                    <span title="Referral" style={{ background: 'hsla(38,92%,55%,0.1)', color: 'var(--accent-amber)', padding: '1px 5px', borderRadius: 4, fontSize: 9, fontWeight: 800, textTransform: 'uppercase' }}>Ref</span>
+                                                )}
                                                 {c.isUnderHMReview && (
-                                                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 100, fontWeight: 600, background: 'hsla(175,65%,42%,0.1)', color: 'var(--stage-offer-extended-color)', border: '1px solid hsla(175,65%,42%,0.2)', whiteSpace: 'nowrap' }}>HM Review</span>
+                                                    <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, fontWeight: 700, background: 'hsla(175,65%,42%,0.1)', color: 'hsl(175,70%,40%)', border: '1px solid hsla(175,65%,42%,0.15)', textTransform: 'uppercase' }}>HM</span>
                                                 )}
                                             </div>
                                             <div style={{ fontSize: 11.5, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.currentRole} · {c.currentCompany}</div>
                                         </div>
                                         <div>
-                                            <span className={`badge badge-${activeBucket}`} style={{ fontSize: 10 }}>
-                                                {activeBucket === 'low' ? 'Limited' : activeBucket === 'strong' ? 'Strong' : 'Potential'}
+                                            <span className={`badge badge-${activeBucket}`} style={{ fontSize: 10, padding: '2px 8px' }}>
+                                                {activeBucket === 'low' ? 'Limited Alignment' : activeBucket === 'strong' ? 'Strong Match' : 'Potential'}
                                             </span>
-                                        </div>
-                                        <div style={{ fontSize: 14, fontWeight: 800, fontFamily: 'Outfit, sans-serif', color: activeBucket === 'strong' ? 'var(--strong-text)' : activeBucket === 'potential' ? 'var(--potential-text)' : 'var(--text-secondary)' }}>
-                                            {c.compositeScore}%
                                         </div>
                                         <div style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>{c.yearsOfExperience}y</div>
                                         <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.location}</div>
@@ -300,15 +311,15 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                                                     background: c.isShortlisted ? 'hsla(38,92%,45%,0.08)' : 'var(--bg-secondary)',
                                                     border: `1px solid ${c.isShortlisted ? 'var(--potential-border)' : 'var(--border-subtle)'}`,
                                                     borderRadius: 7, padding: '5px 9px', cursor: 'pointer',
-                                                    display: 'flex', alignItems: 'center', gap: 5, fontSize: 11.5,
+                                                    display: 'flex', alignItems: 'center', gap: 5, fontSize: 11,
                                                     color: c.isShortlisted ? 'var(--accent-amber)' : 'var(--text-muted)',
                                                     fontFamily: 'Inter, sans-serif', fontWeight: 600,
                                                     transition: 'all 120ms ease',
                                                 }}
                                                 id={`list-star-${c.id}`}
                                             >
-                                                <Star size={12} fill={c.isShortlisted ? 'var(--accent-amber)' : 'none'} color={c.isShortlisted ? 'var(--accent-amber)' : 'currentColor'} />
-                                                {c.isShortlisted ? 'Starred' : 'Star'}
+                                                <Star size={11} fill={c.isShortlisted ? 'var(--accent-amber)' : 'none'} color={c.isShortlisted ? 'var(--accent-amber)' : 'currentColor'} />
+                                                {c.isShortlisted ? 'Shortlisted' : 'Shortlist'}
                                             </button>
                                         </div>
                                     </div>

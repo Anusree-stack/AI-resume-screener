@@ -155,15 +155,32 @@ export default function JDSetup({ onSave, initialJd }: JDSetupProps) {
         createdAt: new Date().toISOString(),
     });
 
+    const [extracting, setExtracting] = useState(false);
+
     const extractSkills = () => {
-        const tech = SKILLS_REPO.filter(s => jd.description.toLowerCase().includes(s.toLowerCase()));
-        const mustHave = tech.slice(0, 5);
-        const nice = tech.slice(5, 9);
-        setJd(prev => ({
-            ...prev,
-            mustHaveSkills: Array.from(new Set([...prev.mustHaveSkills, ...mustHave])),
-            niceToHave: Array.from(new Set([...prev.niceToHave, ...nice])),
-        }));
+        if (!jd.description.trim()) return;
+        setExtracting(true);
+
+        // Simulate AI extraction delay
+        setTimeout(() => {
+            const descLower = jd.description.toLowerCase();
+            const found = SKILLS_REPO.filter(s => descLower.includes(s.toLowerCase()));
+
+            // Heuristic for Demo: first 60% are must-have, rest nice-to-have
+            const mid = Math.ceil(found.length * 0.6);
+            const mustHave = found.slice(0, mid);
+            const nice = found.slice(mid);
+
+            // Default fallback if nothing found but description exists
+            const fallbackMust = found.length === 0 ? ['Communication', 'Team Leadership'] : mustHave;
+
+            setJd(prev => ({
+                ...prev,
+                mustHaveSkills: Array.from(new Set([...prev.mustHaveSkills, ...fallbackMust])),
+                niceToHave: Array.from(new Set([...prev.niceToHave, ...nice])),
+            }));
+            setExtracting(false);
+        }, 1200);
     };
 
     const addMust = (skill: string) => {
@@ -236,15 +253,19 @@ export default function JDSetup({ onSave, initialJd }: JDSetupProps) {
                             <button
                                 type="button"
                                 onClick={extractSkills}
+                                disabled={extracting || !jd.description.trim()}
                                 style={{
                                     display: 'flex', alignItems: 'center', gap: 6,
                                     padding: '6px 14px', borderRadius: 7, border: '1px solid var(--border-glow)',
-                                    background: 'var(--accent-purple-dim)', color: 'var(--accent-purple)',
-                                    fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                                    background: extracting ? 'var(--bg-secondary)' : 'var(--accent-purple-dim)',
+                                    color: extracting ? 'var(--text-muted)' : 'var(--accent-purple)',
+                                    fontSize: 12, fontWeight: 600, cursor: extracting ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif',
+                                    transition: 'all 0.2s ease',
                                 }}
                                 id="auto-extract-btn"
                             >
-                                <Sparkles size={13} /> Auto-Extract Skills with AI
+                                <Sparkles size={13} style={{ animation: extracting ? 'spin 1s linear infinite' : 'none' }} />
+                                {extracting ? 'Extracting Skills...' : 'Auto-Extract Skills with AI'}
                             </button>
                         </div>
                         <textarea

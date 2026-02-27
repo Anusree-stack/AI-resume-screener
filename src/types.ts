@@ -3,12 +3,12 @@
 export type Bucket = 'strong' | 'potential' | 'low';
 
 export type LifecycleStage =
-  | 'Draft'
-  | 'Live – Accepting Applications'
-  | 'Screening in Progress'
-  | 'Interview'
-  | 'Offer Extended'
-  | 'Offer Closed';
+    | 'Draft'
+    | 'Live – Accepting Applications'
+    | 'Screening in Progress'
+    | 'Interview'
+    | 'Offer Extended'
+    | 'Offer Closed';
 
 export interface ScoreDimension {
     label: string;
@@ -41,7 +41,18 @@ export interface Candidate {
 
     isShortlisted: boolean;
     isUnderHMReview?: boolean;
+    isReferral?: boolean;
+    seniority?: string;
+    domain?: string;
     resumeFileName: string;
+    experienceHistory?: ExperienceItem[];
+}
+
+export interface ExperienceItem {
+    role: string;
+    company: string;
+    duration: string;
+    summary: string;
 }
 
 export interface JobDescription {

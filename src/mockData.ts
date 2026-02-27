@@ -137,6 +137,10 @@ export const generateMockCandidates = (count: number, jd: JobDescription): Candi
         if (finalScore >= 80) bucket = 'strong';
         else if (finalScore >= 50) bucket = 'potential';
 
+        const seniorities = ['Entry', 'Mid', 'Senior', 'Lead', 'Director'];
+        const domains = ['Fintech', 'SaaS', 'Healthcare', 'E-commerce', 'EdTech'];
+        const educations = ['Bachelors', 'Masters', 'PhD'];
+
         candidates.push({
             id: `gen-${i}`,
             name,
@@ -146,7 +150,24 @@ export const generateMockCandidates = (count: number, jd: JobDescription): Candi
             currentCompany: 'Tech Corp',
             yearsOfExperience: yoe,
             location: 'Multiple',
-            education: 'B.Tech, Computer Science',
+            seniority: seniorities[Math.floor(Math.random() * seniorities.length)],
+            domain: domains[Math.floor(Math.random() * domains.length)],
+            education: educations[Math.floor(Math.random() * educations.length)],
+            isReferral: Math.random() < 0.15,
+            experienceHistory: [
+                {
+                    role: 'Full Stack Developer',
+                    company: 'InnovaTech Solutions',
+                    duration: '2022 – Present',
+                    summary: 'Leading frontend migration to Next.js and optimizing database queries for high-scale traffic.'
+                },
+                {
+                    role: 'Junior Engineer',
+                    company: 'DataStream Inc',
+                    duration: '2019 – 2022',
+                    summary: 'Developed core features for a real-time analytics dashboard used by 50+ enterprise clients.'
+                }
+            ],
             skills: [...matchedSkills, 'JavaScript', 'HTML', 'CSS'],
             compositeScore: finalScore,
             bucket,
@@ -177,10 +198,14 @@ export const mockCandidates: Candidate[] = [
         currentCompany: 'Razorpay',
         yearsOfExperience: 6,
         location: 'Bangalore',
-        education: 'B.Tech CS · IIT Bombay · 2019 · AWS Certified Solutions Architect',
+        education: 'B.Tech CS · IIT Bombay · 2019',
         skills: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'GraphQL', 'AWS'],
         compositeScore: 91,
         bucket: 'strong',
+        experienceHistory: [
+            { role: 'Senior Software Engineer', company: 'Razorpay', duration: '2021 – Present', summary: 'Architected and built a high-throughput merchant dashboard using React and TypeScript. Optimized Node.js background processors reducing latency by 45%.' },
+            { role: 'Software Engineer', company: 'Zomato', duration: '2019 – 2021', summary: 'Contributed to the core ordering engine. Implemented real-time delivery tracking features using Node.js and Redis.' }
+        ],
         dimensions: [
             { label: 'Skill Alignment', score: 37, max: 40, reasoning: 'Covers all 4 must-have skills. Strong match on React, Node.js, TypeScript, and PostgreSQL. Also proficient in GraphQL and AWS which are nice-to-haves. No skill gaps identified.' },
             { label: 'Relevant Experience', score: 28, max: 30, reasoning: '6 years in full-stack roles at high-growth fintech companies. Led end-to-end feature delivery on payment infrastructure. Experience directly maps to the team\'s scale and complexity.' },
@@ -206,6 +231,10 @@ export const mockCandidates: Candidate[] = [
         skills: ['React', 'Node.js', 'TypeScript', 'MongoDB', 'Redis'],
         compositeScore: 78,
         bucket: 'potential',
+        experienceHistory: [
+            { role: 'Full-Stack Engineer', company: 'CRED', duration: '2021 – Present', summary: 'Developed user onboarding flows and reward systems. Managed complex state transitions in React and scaled microservices in Node.js.' },
+            { role: 'Intern', company: 'Microsoft', duration: '2020 – 2021', summary: 'Worked on developer tools and VS Code extensions. Improved telemetry collection efficiency.' }
+        ],
         dimensions: [
             { label: 'Skill Alignment', score: 30, max: 40, reasoning: 'Strong match on React, Node.js, and TypeScript. PostgreSQL gap is notable — she uses MongoDB primarily. Redis experience partially compensates for backend depth.' },
             { label: 'Relevant Experience', score: 22, max: 30, reasoning: '4 years of full-stack experience. Currently at CRED, working on consumer-facing credit products. Good exposure but slightly below seniority expectations.' },
@@ -231,11 +260,14 @@ export const mockCandidates: Candidate[] = [
         skills: ['React', 'TypeScript', 'CSS', 'Webpack', 'GraphQL'],
         compositeScore: 54,
         bucket: 'potential',
+        experienceHistory: [
+            { role: 'Frontend Engineer', company: 'PhonePe', duration: '2020 – Present', summary: 'Owned the merchant-facing UI for the payment portal. Specialized in high-performance React components and design system implementation.' }
+        ],
         dimensions: [
             { label: 'Skill Alignment', score: 20, max: 40, reasoning: 'Strong React and TypeScript skills, but Node.js and PostgreSQL are absent. This is a significant gap for a full-stack role requiring backend ownership.' },
             { label: 'Relevant Experience', score: 18, max: 30, reasoning: '5 years of experience, but predominantly frontend. Limited backend exposure is a mismatch for this Senior Full-Stack position.' },
             { label: 'Role Context', score: 9, max: 15, reasoning: 'PhonePe is a credible context with strong product complexity. However, the frontend specialization limits direct applicability.' },
-            { label: 'Career Trajectory', score: 7, max: 15, reasoning: 'Stable progression as a frontend specialist. No clear signals of transitioning to full-stack roles in the near term.' },
+            { label: 'Career Trajectory', score: 7, max: 15, reasoning: 'Stable progression as a frontend specialist. No clear signals of transitioning to full-stack roles in the term.' },
         ],
         mustHaveViolations: ['Node.js', 'PostgreSQL'],
         summary: 'Karthik has strong frontend credentials and 5 years of experience at PhonePe, but the absence of Node.js and PostgreSQL represents a significant gap for this full-stack role. Recommend for a frontend-specific opening if one becomes available.',
@@ -256,6 +288,9 @@ export const mockCandidates: Candidate[] = [
         skills: ['JavaScript', 'React', 'HTML', 'CSS'],
         compositeScore: 31,
         bucket: 'low',
+        experienceHistory: [
+            { role: 'Junior Developer', company: 'StartupXYZ', duration: '2023 – Present', summary: 'Building the company landing page and internal admin tools. Gaining experience in React and Firebase.' }
+        ],
         dimensions: [
             { label: 'Skill Alignment', score: 10, max: 40, reasoning: 'Basic JavaScript and React only. TypeScript, Node.js, and PostgreSQL are all absent. The must-have coverage falls significantly short of role requirements.' },
             { label: 'Relevant Experience', score: 9, max: 30, reasoning: '2 years of experience — significantly below the 4–8 year requirement. No exposure to production-scale engineering environments.' },
