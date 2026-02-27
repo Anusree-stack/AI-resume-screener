@@ -19,7 +19,7 @@ export default function Breadcrumbs({ currentScreen, onNavigate }: BreadcrumbsPr
     const currentIndex = SCREENS.findIndex(s => s.id === currentScreen);
 
     // Don't show on landing
-    if (currentScreen === 'landing' || currentScreen === 'candidate-detail') return null;
+    if (currentScreen === 'home' || currentScreen === 'candidate-detail') return null;
 
     return (
         <nav style={{
@@ -28,7 +28,7 @@ export default function Breadcrumbs({ currentScreen, onNavigate }: BreadcrumbsPr
             background: 'var(--bg-card)',
         }}>
             <button
-                onClick={() => onNavigate('landing')}
+                onClick={() => onNavigate('home')}
                 style={{
                     background: 'none', border: 'none', cursor: 'pointer',
                     color: 'var(--text-muted)', display: 'flex', alignItems: 'center'

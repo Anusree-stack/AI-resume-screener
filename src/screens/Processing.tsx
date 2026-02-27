@@ -58,7 +58,6 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
         let raf: number;
         let elapsed = 0;
         let start: number | null = null;
-        let stageStartTime = 0;
 
         const stageDurations = stages.map(s => s.duration);
         const stageCumulative = stageDurations.reduce<number[]>((acc, d, i) => {

@@ -4,8 +4,7 @@ import './index.css';
 import type { AppScreen, Candidate, JobDescription } from './types';
 import { jdLibrary, generateMockCandidates, mockCandidates } from './mockData';
 import TopNav from './components/TopNav';
-import Breadcrumbs from './components/Breadcrumbs';
-import JDList from './screens/JDList';
+import Home from './screens/Home';
 import JDSetup from './screens/JDSetup';
 import CVUpload from './screens/CVUpload';
 import Processing from './screens/Processing';
@@ -14,25 +13,23 @@ import CandidateDetail from './screens/CandidateDetail';
 import Shortlist from './screens/Shortlist';
 
 export default function App() {
-  const [screen, setScreen] = useState<AppScreen>('jd-list');
+  const [screen, setScreen] = useState<AppScreen>('home');
   const [jd, setJd] = useState<JobDescription | null>(null);
   const [uploadedFileCount, setUploadedFileCount] = useState(0);
   const [candidates, setCandidates] = useState<Candidate[]>(mockCandidates);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
 
-  const handleJDSelect = (selectedJd: JobDescription) => {
-    setJd(selectedJd);
-    setScreen('cv-upload');
-  };
-
-  const handleJDNext = (newJd: JobDescription) => {
-    setJd(newJd);
-    setScreen('cv-upload');
+  const handleJDSave = (savedJd: JobDescription, action: 'draft' | 'publish' | 'upload') => {
+    setJd(savedJd);
+    if (action === 'upload') {
+      setScreen('cv-upload');
+    } else {
+      setScreen('home');
+    }
   };
 
   const handleCVUploadNext = (files: File[]) => {
     setUploadedFileCount(files.length);
-    // If it's a bulk/demo upload, generate many candidates
     if (files.length > 50) {
       setCandidates(generateMockCandidates(files.length, jd || mockCandidates[0] as unknown as JobDescription));
     } else {
@@ -41,9 +38,7 @@ export default function App() {
     setScreen('processing');
   };
 
-  const handleProcessingComplete = () => {
-    setScreen('dashboard');
-  };
+  const handleProcessingComplete = () => setScreen('dashboard');
 
   const handleSelectCandidate = (id: string) => {
     setSelectedCandidateId(id);
@@ -58,37 +53,38 @@ export default function App() {
     setCandidates(prev => prev.map(c => c.id === id ? { ...c, isShortlisted: false } : c));
   };
 
+  const handleHomeNavigate = (dest: AppScreen, jdItem?: JobDescription) => {
+    if (jdItem) setJd(jdItem);
+    setScreen(dest);
+  };
+
   const selectedCandidate = candidates.find(c => c.id === selectedCandidateId);
 
   return (
-    <div style={{ minHeight: '100vh' }}>
-      <TopNav currentScreen={screen} />
-      <Breadcrumbs currentScreen={screen} onNavigate={setScreen} />
+    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
+      <TopNav
+        currentScreen={screen}
+        onHome={() => setScreen('home')}
+        onCreateJD={() => { setJd(null); setScreen('jd-setup'); }}
+      />
 
-      {screen === 'jd-list' && (
-        <JDList
-          jds={jdLibrary}
-          onSelect={handleJDSelect}
-          onCreateNew={() => setScreen('jd-setup')}
-        />
+      {screen === 'home' && (
+        <Home jds={jdLibrary} onNavigate={handleHomeNavigate} />
       )}
 
       {screen === 'jd-setup' && (
-        <JDSetup onNext={handleJDNext} initialJd={jd || undefined} />
+        <JDSetup onSave={handleJDSave} initialJd={jd || undefined} />
       )}
 
       {screen === 'cv-upload' && (
         <CVUpload
           onNext={handleCVUploadNext}
-          onBack={() => setScreen(jd?.id ? 'jd-list' : 'jd-setup')}
+          onBack={() => setScreen('jd-setup')}
         />
       )}
 
       {screen === 'processing' && (
-        <Processing
-          fileCount={uploadedFileCount}
-          onComplete={handleProcessingComplete}
-        />
+        <Processing fileCount={uploadedFileCount} onComplete={handleProcessingComplete} />
       )}
 
       {screen === 'dashboard' && (
@@ -97,6 +93,8 @@ export default function App() {
           onSelectCandidate={handleSelectCandidate}
           onUpdateCandidates={setCandidates}
           onProceedToShortlist={() => setScreen('shortlist')}
+          onBack={() => setScreen('home')}
+          roleName={jd?.title}
         />
       )}
 
@@ -104,9 +102,7 @@ export default function App() {
         <CandidateDetail
           candidate={selectedCandidate}
           onBack={() => setScreen('dashboard')}
-          onUpdate={updated => {
-            handleUpdateCandidate(updated);
-          }}
+          onUpdate={handleUpdateCandidate}
         />
       )}
 
@@ -115,6 +111,7 @@ export default function App() {
           candidates={candidates}
           onBack={() => setScreen('dashboard')}
           onRemove={handleRemoveFromShortlist}
+          roleName={jd?.title}
         />
       )}
     </div>

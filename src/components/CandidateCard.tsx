@@ -13,7 +13,7 @@ interface CandidateCardProps {
 const bucketLabel: Record<string, string> = {
     strong: 'Strong',
     potential: 'Potential',
-    low: 'Low Match',
+    low: 'Limited Alignment',
 };
 
 export default function CandidateCard({ candidate, onClick, onToggleShortlist, rank }: CandidateCardProps) {

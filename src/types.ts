@@ -2,6 +2,14 @@
 
 export type Bucket = 'strong' | 'potential' | 'low';
 
+export type LifecycleStage =
+  | 'Draft'
+  | 'Live – Accepting Applications'
+  | 'Screening in Progress'
+  | 'Interview'
+  | 'Offer Extended'
+  | 'Offer Closed';
+
 export interface ScoreDimension {
     label: string;
     score: number;
@@ -24,12 +32,15 @@ export interface Candidate {
     compositeScore: number;   // 0–100
     bucket: Bucket;
     overriddenBucket?: Bucket;
+    overrideReason?: string;
+    overrideNote?: string;
 
     dimensions: ScoreDimension[];
     mustHaveViolations: string[];
     summary: string;
 
     isShortlisted: boolean;
+    isUnderHMReview?: boolean;
     resumeFileName: string;
 }
 
@@ -43,12 +54,16 @@ export interface JobDescription {
     description: string;
     mustHaveSkills: string[];
     niceToHave: string[];
-    status: 'Draft' | 'Open' | 'Closed';
+    status: LifecycleStage;
     createdAt: string;
+    applicationCount?: number;
+    strongCount?: number;
+    shortlistedCount?: number;
+    daysOpen?: number;
 }
 
 export type AppScreen =
-    | 'landing'
+    | 'home'
     | 'jd-list'
     | 'jd-setup'
     | 'cv-upload'

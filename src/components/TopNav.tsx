@@ -1,111 +1,145 @@
 // src/components/TopNav.tsx
-import { CheckCircle, Briefcase } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Moon, Sun, Plus } from 'lucide-react';
 import type { AppScreen } from '../types';
 
-interface Step {
-    id: AppScreen;
-    label: string;
-    index: number;
+interface TopNavProps {
+    currentScreen: AppScreen;
+    onHome: () => void;
+    onCreateJD: () => void;
 }
 
-const steps: Step[] = [
-    { id: 'jd-setup', label: 'Job Setup', index: 1 },
-    { id: 'cv-upload', label: 'Upload CVs', index: 2 },
-    { id: 'processing', label: 'Processing', index: 3 },
-    { id: 'dashboard', label: 'Dashboard', index: 4 },
-    { id: 'shortlist', label: 'Shortlist', index: 5 },
-];
+export default function TopNav({ currentScreen, onHome, onCreateJD }: TopNavProps) {
+    const [dark, setDark] = useState(false);
 
-const screenOrder: AppScreen[] = ['jd-setup', 'cv-upload', 'processing', 'dashboard', 'candidate-detail', 'shortlist'];
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    }, [dark]);
 
-function getStepStatus(stepId: AppScreen, currentScreen: AppScreen): 'done' | 'active' | 'pending' {
-    const stepIdx = screenOrder.indexOf(stepId);
-    const currentIdx = screenOrder.indexOf(currentScreen === 'candidate-detail' ? 'dashboard' : currentScreen);
-    if (stepIdx < currentIdx) return 'done';
-    if (stepIdx === currentIdx) return 'active';
-    return 'pending';
-}
+    const isActive = (screens: AppScreen[]) => screens.includes(currentScreen);
 
-export default function TopNav({ currentScreen }: { currentScreen: AppScreen }) {
+    const navLinkStyle = (active: boolean): React.CSSProperties => ({
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        padding: '5px 14px',
+        borderRadius: 7,
+        fontSize: 13.5,
+        fontWeight: active ? 600 : 500,
+        color: active ? 'var(--accent-purple)' : 'var(--text-secondary)',
+        background: active ? 'var(--accent-purple-dim)' : 'transparent',
+        border: 'none',
+        cursor: 'pointer',
+        transition: 'all 120ms ease',
+        fontFamily: 'Inter, sans-serif',
+        textDecoration: 'none',
+    });
+
     return (
-        <header style={{
+        <nav style={{
             position: 'sticky', top: 0, zIndex: 100,
-            background: 'hsla(222, 30%, 7%, 0.9)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
+            height: 60,
+            background: 'var(--bg-card)',
             borderBottom: '1px solid var(--border-subtle)',
+            display: 'flex', alignItems: 'center',
             padding: '0 32px',
+            gap: 8,
+            backdropFilter: 'blur(12px)',
         }}>
-            <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
-                {/* Logo */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{
-                        width: 32, height: 32, borderRadius: 8,
-                        background: 'linear-gradient(135deg, var(--accent-purple), hsl(240, 83%, 68%))',
+            {/* Logo */}
+            <button
+                onClick={onHome}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', borderRadius: 8 }}
+                id="nav-logo"
+            >
+                <div style={{
+                    width: 32, height: 32, borderRadius: 9,
+                    background: 'var(--accent-purple)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                </div>
+                <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 16, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+                    TalentIQ
+                </span>
+            </button>
+
+            {/* Divider */}
+            <div style={{ width: 1, height: 24, background: 'var(--border-subtle)', margin: '0 8px' }} />
+
+            {/* Nav links */}
+            <button
+                onClick={onHome}
+                style={navLinkStyle(isActive(['home']))}
+                id="nav-overview"
+            >
+                Overview
+            </button>
+
+            {/* Right side */}
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+                {/* Create JD button */}
+                <button
+                    onClick={onCreateJD}
+                    style={{
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        padding: '7px 16px',
+                        background: 'var(--accent-purple)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: 8,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        fontFamily: 'Inter, sans-serif',
+                        transition: 'background 120ms ease',
+                    }}
+                    onMouseOver={e => (e.currentTarget.style.background = 'hsl(262,72%,46%)')}
+                    onMouseOut={e => (e.currentTarget.style.background = 'var(--accent-purple)')}
+                    id="nav-create-jd"
+                >
+                    <Plus size={14} />
+                    Create JD
+                </button>
+
+                {/* Theme toggle */}
+                <button
+                    onClick={() => setDark(d => !d)}
+                    title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+                    style={{
+                        width: 34, height: 34,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                        <Briefcase size={16} color="white" />
-                    </div>
-                    <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em' }}>
-                        TalentIQ
-                    </span>
-                    <span style={{
-                        fontSize: 10, fontWeight: 600, padding: '2px 8px',
-                        background: 'var(--accent-purple-dim)', color: 'var(--accent-purple)',
-                        borderRadius: 100, border: '1px solid hsla(262,83%,68%,0.2)',
-                        letterSpacing: '0.05em',
-                    }}>MVP</span>
-                </div>
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        color: 'var(--text-muted)',
+                        transition: 'all 120ms ease',
+                    }}
+                    id="theme-toggle"
+                >
+                    {dark ? <Sun size={15} /> : <Moon size={15} />}
+                </button>
 
-                {/* Steps */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-                    {steps.map((step, i) => {
-                        const status = getStepStatus(step.id, currentScreen);
-                        return (
-                            <div key={step.id} style={{ display: 'flex', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                                    <div style={{
-                                        width: 28, height: 28, borderRadius: '50%',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontSize: 11, fontWeight: 700,
-                                        border: `2px solid ${status === 'active' ? 'var(--accent-purple)' : status === 'done' ? 'var(--accent-green)' : 'var(--border-subtle)'}`,
-                                        background: status === 'active' ? 'var(--accent-purple-dim)' : status === 'done' ? 'hsla(158,72%,52%,0.12)' : 'transparent',
-                                        color: status === 'active' ? 'var(--accent-purple)' : status === 'done' ? 'var(--accent-green)' : 'var(--text-muted)',
-                                        transition: 'all 0.3s ease',
-                                    }}>
-                                        {status === 'done' ? <CheckCircle size={13} /> : step.index}
-                                    </div>
-                                    <span style={{
-                                        fontSize: 10, fontWeight: 500,
-                                        color: status === 'active' ? 'var(--accent-purple)' : status === 'done' ? 'var(--accent-green)' : 'var(--text-muted)',
-                                        whiteSpace: 'nowrap',
-                                    }}>{step.label}</span>
-                                </div>
-                                {i < steps.length - 1 && (
-                                    <div style={{
-                                        width: 48, height: 2, margin: '0 4px', marginBottom: 16,
-                                        background: getStepStatus(steps[i + 1].id, currentScreen) !== 'pending'
-                                            ? 'var(--accent-purple)'
-                                            : 'var(--border-subtle)',
-                                        transition: 'background 0.3s ease',
-                                    }} />
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {/* AI Assist Badge */}
+                {/* Status pill */}
                 <div style={{
                     display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '6px 12px', borderRadius: 100,
-                    background: 'var(--accent-purple-dim)',
-                    border: '1px solid hsla(262,83%,68%,0.2)',
+                    padding: '5px 12px',
+                    background: 'var(--strong-bg)',
+                    border: '1px solid var(--strong-border)',
+                    borderRadius: 100,
+                    fontSize: 12, fontWeight: 600,
+                    color: 'var(--strong-text)',
                 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-purple)', animation: 'pulse-glow 2s infinite' }} />
-                    <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--accent-purple)' }}>AI Assist Active</span>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-green)', display: 'inline-block' }} />
+                    Screening Mode
                 </div>
             </div>
-        </header>
+        </nav>
     );
 }
