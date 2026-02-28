@@ -1,11 +1,12 @@
 // src/screens/Dashboard.tsx
 import { useState, useMemo } from 'react';
-import { Star, ArrowLeft, Search, X, LayoutList, Columns2, ArrowRight, CheckSquare, FileText } from 'lucide-react';
-import type { Candidate, Bucket } from '../types';
+import { Star, ArrowLeft, Search, X, LayoutList, Columns2, ArrowRight, CheckSquare, FileText, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import type { Candidate, Bucket, JobDescription } from '../types';
 import VirtualBucket from '../components/VirtualBucket';
 
 interface DashboardProps {
     candidates: Candidate[];
+    jd?: JobDescription | null;
     onSelectCandidate: (id: string) => void;
     onUpdateCandidates: (candidates: Candidate[]) => void;
     onProceedToShortlist: () => void;
@@ -31,7 +32,7 @@ const BUCKET_CONFIG = {
 };
 
 export default function Dashboard({
-    candidates, onSelectCandidate, onUpdateCandidates, onProceedToShortlist, onBack, roleName,
+    candidates, jd, onSelectCandidate, onUpdateCandidates, onProceedToShortlist, onBack, roleName,
     search, setSearch, bucketFilter, setBucketFilter, minScore, setMinScore, minExp, setMinExp,
     seniority, setSeniority, domain, setDomain, edu, setEdu, referralOnly, setReferralOnly, view, setView
 }: DashboardProps) {
@@ -39,6 +40,8 @@ export default function Dashboard({
     const [showShortlistModal, setShowShortlistModal] = useState(false);
     const [shortlistConfirmed, setShortlistConfirmed] = useState(false);
     const [isJDOpen, setIsJDOpen] = useState(false);
+    const [sortBy, setSortBy] = useState<'rank' | 'score' | 'exp'>('rank');
+    const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
     const toggleShortlist = (id: string) => {
         onUpdateCandidates(candidates.map(c => c.id === id ? { ...c, isShortlisted: !c.isShortlisted } : c));
@@ -110,7 +113,7 @@ export default function Dashboard({
     const potentialCount = candidates.filter(c => (c.overriddenBucket ?? c.bucket) === 'potential').length;
     const pctStrong = candidates.length ? Math.round((strongCount / candidates.length) * 100) : 0;
     const pctPotential = candidates.length ? Math.round((potentialCount / candidates.length) * 100) : 0;
-    const batchTAT = candidates.length > 50 ? '< 4 min' : '< 90 sec';
+    const batchTAT = '< 30 sec';
 
     const selectStyle: React.CSSProperties = {
         padding: '6px 28px 6px 10px',
@@ -275,83 +278,99 @@ export default function Dashboard({
                                     style={{ cursor: 'pointer', accentColor: 'var(--accent-purple)' }}
                                 />
                             </div>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Score</div>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Rank</div>
+                            {/* Sortable column headers */}
+                            <div onClick={() => { if (sortBy === 'score') setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortBy('score'); setSortDir('desc'); } }} style={{ display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer', userSelect: 'none', fontSize: 10, fontWeight: 700, color: sortBy === 'score' ? 'var(--accent-purple)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                                Score {sortBy === 'score' ? (sortDir === 'asc' ? <ArrowUp size={9} /> : <ArrowDown size={9} />) : <ArrowUpDown size={9} />}
+                            </div>
+                            <div onClick={() => { if (sortBy === 'rank') setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortBy('rank'); setSortDir('asc'); } }} style={{ display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer', userSelect: 'none', fontSize: 10, fontWeight: 700, color: sortBy === 'rank' ? 'var(--accent-purple)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                                Rank {sortBy === 'rank' ? (sortDir === 'asc' ? <ArrowUp size={9} /> : <ArrowDown size={9} />) : <ArrowUpDown size={9} />}
+                            </div>
                             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Candidate</div>
                             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Bucket</div>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Exp</div>
+                            <div onClick={() => { if (sortBy === 'exp') setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortBy('exp'); setSortDir('desc'); } }} style={{ display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer', userSelect: 'none', fontSize: 10, fontWeight: 700, color: sortBy === 'exp' ? 'var(--accent-purple)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                                Exp {sortBy === 'exp' ? (sortDir === 'asc' ? <ArrowUp size={9} /> : <ArrowDown size={9} />) : <ArrowUpDown size={9} />}
+                            </div>
                             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Location</div>
                             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'right' }}>Actions</div>
                         </div>
                         {filteredCandidates.length === 0 ? (
                             <div style={{ textAlign: 'center', padding: '72px', color: 'var(--text-muted)', fontSize: 14 }}>No candidates match current scope.</div>
                         ) : (
-                            filteredCandidates.map((c, i) => {
-                                const activeBucket = c.overriddenBucket ?? c.bucket;
-                                const isSelected = selectedIds.has(c.id);
-                                return (
-                                    <div
-                                        key={c.id}
-                                        className="table-row"
-                                        style={{
-                                            display: 'grid', gridTemplateColumns: '40px 70px 50px 1.5fr 1fr 100px 100px 100px',
-                                            alignItems: 'center', padding: '14px 24px',
-                                            borderBottom: i < filteredCandidates.length - 1 ? '1px solid var(--border-subtle)' : 'none',
-                                            background: isSelected ? 'hsla(262,72%,52%,0.03)' : undefined,
-                                            cursor: 'pointer',
-                                        }}
-                                        onClick={() => onSelectCandidate(c.id)}
-                                        id={`list-row-${c.id}`}
-                                    >
-                                        <div onClick={e => { e.stopPropagation(); toggleSelect(c.id); }}>
-                                            <input type="checkbox" checked={isSelected} readOnly style={{ cursor: 'pointer', accentColor: 'var(--accent-purple)' }} />
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: 14, fontWeight: 800, fontFamily: 'Outfit, sans-serif', color: activeBucket === 'strong' ? 'var(--strong-text)' : activeBucket === 'potential' ? 'var(--potential-text)' : 'var(--text-secondary)' }}>
-                                                {c.compositeScore}%
+                            filteredCandidates
+                                .slice()
+                                .sort((a, b) => {
+                                    let val = 0;
+                                    if (sortBy === 'score') val = b.compositeScore - a.compositeScore;
+                                    else if (sortBy === 'rank') val = (a.globalRank ?? 0) - (b.globalRank ?? 0);
+                                    else if (sortBy === 'exp') val = b.yearsOfExperience - a.yearsOfExperience;
+                                    return sortDir === 'asc' ? val : -val;
+                                })
+                                .map((c, i) => {
+                                    const activeBucket = c.overriddenBucket ?? c.bucket;
+                                    const isSelected = selectedIds.has(c.id);
+                                    return (
+                                        <div
+                                            key={c.id}
+                                            className="table-row"
+                                            style={{
+                                                display: 'grid', gridTemplateColumns: '40px 70px 50px 1.5fr 1fr 100px 100px 100px',
+                                                alignItems: 'center', padding: '14px 24px',
+                                                borderBottom: i < filteredCandidates.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+                                                background: isSelected ? 'hsla(262,72%,52%,0.03)' : undefined,
+                                                cursor: 'pointer',
+                                            }}
+                                            onClick={() => onSelectCandidate(c.id)}
+                                            id={`list-row-${c.id}`}
+                                        >
+                                            <div onClick={e => { e.stopPropagation(); toggleSelect(c.id); }}>
+                                                <input type="checkbox" checked={isSelected} readOnly style={{ cursor: 'pointer', accentColor: 'var(--accent-purple)' }} />
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: 14, fontWeight: 800, fontFamily: 'Outfit, sans-serif', color: activeBucket === 'strong' ? 'var(--strong-text)' : activeBucket === 'potential' ? 'var(--potential-text)' : 'var(--text-secondary)' }}>
+                                                    {c.compositeScore}%
+                                                </div>
+                                            </div>
+                                            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>#{c.globalRank}</div>
+                                            <div style={{ minWidth: 0 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
+                                                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{c.name}</span>
+                                                    {c.isReferral && (
+                                                        <span title="Referral" style={{ background: 'hsla(38,92%,55%,0.1)', color: 'var(--accent-amber)', padding: '1px 5px', borderRadius: 4, fontSize: 9, fontWeight: 800, textTransform: 'uppercase' }}>Ref</span>
+                                                    )}
+                                                    {c.isUnderHMReview && (
+                                                        <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, fontWeight: 700, background: 'hsla(175,65%,42%,0.1)', color: 'hsl(175,70%,40%)', border: '1px solid hsla(175,65%,42%,0.15)', textTransform: 'uppercase' }}>HM</span>
+                                                    )}
+                                                </div>
+                                                <div style={{ fontSize: 11.5, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.currentRole} · {c.currentCompany}</div>
+                                            </div>
+                                            <div>
+                                                <span className={`badge badge-${activeBucket}`} style={{ fontSize: 10, padding: '2px 8px' }}>
+                                                    {activeBucket === 'low' ? 'Limited Alignment' : activeBucket === 'strong' ? 'Strong Match' : 'Potential'}
+                                                </span>
+                                            </div>
+                                            <div style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>{c.yearsOfExperience}y</div>
+                                            <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.location}</div>
+                                            <div style={{ display: 'flex', justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
+                                                <button
+                                                    onClick={() => toggleShortlist(c.id)}
+                                                    style={{
+                                                        background: c.isShortlisted ? 'hsla(38,92%,45%,0.08)' : 'var(--bg-secondary)',
+                                                        border: `1px solid ${c.isShortlisted ? 'var(--potential-border)' : 'var(--border-subtle)'}`,
+                                                        borderRadius: 7, padding: '5px 9px', cursor: 'pointer',
+                                                        display: 'flex', alignItems: 'center', gap: 5, fontSize: 11,
+                                                        color: c.isShortlisted ? 'var(--accent-amber)' : 'var(--text-muted)',
+                                                        fontFamily: 'Inter, sans-serif', fontWeight: 600,
+                                                        transition: 'all 120ms ease',
+                                                    }}
+                                                    id={`list-star-${c.id}`}
+                                                >
+                                                    <Star size={11} fill={c.isShortlisted ? 'var(--accent-amber)' : 'none'} color={c.isShortlisted ? 'var(--accent-amber)' : 'currentColor'} />
+                                                    {c.isShortlisted ? 'Shortlisted' : 'Shortlist'}
+                                                </button>
                                             </div>
                                         </div>
-                                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>#{c.globalRank}</div>
-                                        <div style={{ minWidth: 0 }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
-                                                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{c.name}</span>
-                                                {c.isReferral && (
-                                                    <span title="Referral" style={{ background: 'hsla(38,92%,55%,0.1)', color: 'var(--accent-amber)', padding: '1px 5px', borderRadius: 4, fontSize: 9, fontWeight: 800, textTransform: 'uppercase' }}>Ref</span>
-                                                )}
-                                                {c.isUnderHMReview && (
-                                                    <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, fontWeight: 700, background: 'hsla(175,65%,42%,0.1)', color: 'hsl(175,70%,40%)', border: '1px solid hsla(175,65%,42%,0.15)', textTransform: 'uppercase' }}>HM</span>
-                                                )}
-                                            </div>
-                                            <div style={{ fontSize: 11.5, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.currentRole} · {c.currentCompany}</div>
-                                        </div>
-                                        <div>
-                                            <span className={`badge badge-${activeBucket}`} style={{ fontSize: 10, padding: '2px 8px' }}>
-                                                {activeBucket === 'low' ? 'Limited Alignment' : activeBucket === 'strong' ? 'Strong Match' : 'Potential'}
-                                            </span>
-                                        </div>
-                                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>{c.yearsOfExperience}y</div>
-                                        <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.location}</div>
-                                        <div style={{ display: 'flex', justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
-                                            <button
-                                                onClick={() => toggleShortlist(c.id)}
-                                                style={{
-                                                    background: c.isShortlisted ? 'hsla(38,92%,45%,0.08)' : 'var(--bg-secondary)',
-                                                    border: `1px solid ${c.isShortlisted ? 'var(--potential-border)' : 'var(--border-subtle)'}`,
-                                                    borderRadius: 7, padding: '5px 9px', cursor: 'pointer',
-                                                    display: 'flex', alignItems: 'center', gap: 5, fontSize: 11,
-                                                    color: c.isShortlisted ? 'var(--accent-amber)' : 'var(--text-muted)',
-                                                    fontFamily: 'Inter, sans-serif', fontWeight: 600,
-                                                    transition: 'all 120ms ease',
-                                                }}
-                                                id={`list-star-${c.id}`}
-                                            >
-                                                <Star size={11} fill={c.isShortlisted ? 'var(--accent-amber)' : 'none'} color={c.isShortlisted ? 'var(--accent-amber)' : 'currentColor'} />
-                                                {c.isShortlisted ? 'Shortlisted' : 'Shortlist'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                );
-                            })
+                                    );
+                                })
                         )}
                     </div>
                 )}
@@ -420,14 +439,16 @@ export default function Dashboard({
                 )}
             </div>
 
-            {/* Bulk Action Bar */}
+            {/* Bulk Action Bar — fixed to bottom of viewport */}
             {selectedIds.size > 0 && (
                 <div style={{
-                    position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
-                    background: 'var(--bg-card)', border: '1px solid var(--border-glow)',
-                    borderRadius: 12, padding: '14px 22px',
+                    position: 'fixed', bottom: 0, left: 0, right: 0,
+                    background: 'var(--bg-card)',
+                    borderTop: '2px solid var(--accent-purple)',
+                    padding: '12px 40px',
                     display: 'flex', alignItems: 'center', gap: 18,
-                    boxShadow: 'var(--shadow-lg)', zIndex: 200,
+                    boxShadow: '0 -4px 24px hsla(262,72%,52%,0.12)',
+                    zIndex: 200,
                     backdropFilter: 'blur(12px)',
                 }}>
                     <Star size={15} color="var(--accent-amber)" fill="var(--accent-amber)" />
@@ -491,9 +512,9 @@ export default function Dashboard({
                             </div>
 
                             <div style={{ marginBottom: 24 }}>
-                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Requirements</h4>
+                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Must-Have Skills</h4>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                                    {['React', 'Node.js', 'TypeScript', 'PostgreSQL'].map(s => (
+                                    {(jd?.mustHaveSkills ?? ['React', 'Node.js', 'TypeScript', 'PostgreSQL']).map(s => (
                                         <span key={s} style={{ padding: '4px 10px', borderRadius: 6, background: 'var(--accent-purple-dim)', color: 'var(--accent-purple)', fontSize: 12, fontWeight: 600 }}>{s}</span>
                                     ))}
                                 </div>

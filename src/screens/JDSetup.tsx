@@ -366,25 +366,13 @@ export default function JDSetup({ onSave, initialJd }: JDSetupProps) {
                     {/* Save & Publish */}
                     <button
                         type="button"
-                        className="btn-secondary"
+                        className="btn-primary"
                         onClick={() => onSave({ ...jd, status: 'Live – Accepting Applications' }, 'publish')}
                         disabled={!canPublish}
-                        style={{ fontSize: 13, borderColor: 'var(--accent-blue)', color: 'var(--accent-blue)' }}
+                        style={{ fontSize: 13 }}
                         id="save-publish-btn"
                     >
                         Save & Publish
-                    </button>
-                    {/* Upload CV */}
-                    <button
-                        type="button"
-                        className="btn-primary"
-                        onClick={() => onSave({ ...jd, status: 'Screening in Progress' }, 'upload')}
-                        disabled={!canPublish}
-                        style={{ fontSize: 13 }}
-                        id="save-upload-btn"
-                    >
-                        Upload CVs for Screening
-                        <Sparkles size={14} />
                     </button>
                 </div>
             </div>

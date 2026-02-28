@@ -1,8 +1,9 @@
 // src/App.tsx
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import './index.css';
 import type { AppScreen, Candidate, JobDescription, Bucket } from './types';
-import { jdLibrary, generateMockCandidates, mockCandidates } from './mockData';
+import { jdLibraryBase } from './mockData';
+import { buildCandidateStore, generateCandidatesForJD } from './candidateStore';
 import TopNav from './components/TopNav';
 import Home from './screens/Home';
 import JDSetup from './screens/JDSetup';
@@ -14,10 +15,30 @@ import Shortlist from './screens/Shortlist';
 
 export default function App() {
   const [screen, setScreen] = useState<AppScreen>('home');
-  const [jd, setJd] = useState<JobDescription | null>(null);
   const [uploadedFileCount, setUploadedFileCount] = useState(0);
-  const [candidates, setCandidates] = useState<Candidate[]>(mockCandidates);
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
+
+  // JD list is mutable state so newly created JDs appear on Home immediately
+  const [jds, setJds] = useState<JobDescription[]>(jdLibraryBase);
+  const [activeJd, setActiveJd] = useState<JobDescription | null>(null);
+
+  // Pre-build the candidate store once from the base JDs
+  // When new JDs are published they won't have pre-built pools — we generate on demand via Processing
+  const [candidateStore] = useState(() => buildCandidateStore(jdLibraryBase));
+
+  // Compute strongCount per JD dynamically from the store, then attach it
+  const jdsWithCounts = useMemo<JobDescription[]>(() => {
+    return jds.map(jd => {
+      const pool = candidateStore[jd.id] ?? [];
+      const strong = pool.filter(c => (c.overriddenBucket ?? c.bucket) === 'strong').length;
+      return {
+        ...jd,
+        applicationCount: pool.length > 0 ? pool.length : jd.applicationCount,
+        strongCount: pool.length > 0 ? strong : jd.strongCount,
+      };
+    });
+  }, [jds, candidateStore]);
 
   // Dashboard Filters Persistence
   const [dashboardSearch, setDashboardSearch] = useState('');
@@ -31,7 +52,16 @@ export default function App() {
   const [dashboardView, setDashboardView] = useState<'list' | 'bucket'>('list');
 
   const handleJDSave = (savedJd: JobDescription, action: 'draft' | 'publish' | 'upload') => {
-    setJd(savedJd);
+    // If this JD already exists, update it; otherwise append (new role)
+    setJds(prev => {
+      const exists = prev.find(j => j.id === savedJd.id);
+      if (exists) {
+        return prev.map(j => j.id === savedJd.id ? savedJd : j);
+      }
+      // New JD — append with applicationCount 0
+      return [...prev, { ...savedJd, applicationCount: 0, strongCount: 0, shortlistedCount: 0 }];
+    });
+    setActiveJd(savedJd);
     if (action === 'upload') {
       setScreen('cv-upload');
     } else {
@@ -41,9 +71,12 @@ export default function App() {
 
   const handleCVUploadNext = (files: File[]) => {
     setUploadedFileCount(files.length);
-    // Use currently active JD or fallback to first one in library
-    const activeJd = jd || jdLibrary[0];
-    setCandidates(generateMockCandidates(files.length, activeJd));
+    const jdForUpload = activeJd ?? jdLibraryBase[0];
+    const generated = generateCandidatesForJD(
+      { ...jdForUpload, applicationCount: files.length },
+      'fullstack'
+    );
+    setCandidates(generated);
     setScreen('processing');
   };
 
@@ -62,8 +95,32 @@ export default function App() {
     setCandidates(prev => prev.map(c => c.id === id ? { ...c, isShortlisted: false } : c));
   };
 
+  // Reset filters when switching roles to avoid stale state
+  const resetFilters = () => {
+    setDashboardSearch('');
+    setDashboardBucketFilter('');
+    setDashboardMinScore(0);
+    setDashboardMinExp(0);
+    setDashboardSeniority('');
+    setDashboardDomain('');
+    setDashboardEdu('');
+    setDashboardReferralOnly(false);
+    setDashboardView('list');
+  };
+
   const handleHomeNavigate = (dest: AppScreen, jdItem?: JobDescription) => {
-    if (jdItem) setJd(jdItem);
+    if (jdItem) {
+      setActiveJd(jdItem);
+      // Load the pre-built pool for this role from the store
+      const pool = candidateStore[jdItem.id];
+      if (pool && pool.length > 0) {
+        resetFilters();
+        setCandidates(pool);
+      }
+    }
+    if (dest === 'jd-setup') {
+      setActiveJd(null);
+    }
     setScreen(dest);
   };
 
@@ -74,15 +131,15 @@ export default function App() {
       <TopNav
         currentScreen={screen}
         onHome={() => setScreen('home')}
-        onCreateJD={() => { setJd(null); setScreen('jd-setup'); }}
+        onCreateJD={() => { setActiveJd(null); setScreen('jd-setup'); }}
       />
 
       {screen === 'home' && (
-        <Home jds={jdLibrary} onNavigate={handleHomeNavigate} />
+        <Home jds={jdsWithCounts} onNavigate={handleHomeNavigate} />
       )}
 
       {screen === 'jd-setup' && (
-        <JDSetup onSave={handleJDSave} initialJd={jd || undefined} />
+        <JDSetup onSave={handleJDSave} initialJd={activeJd || undefined} />
       )}
 
       {screen === 'cv-upload' && (
@@ -99,11 +156,12 @@ export default function App() {
       {screen === 'dashboard' && (
         <Dashboard
           candidates={candidates}
+          jd={activeJd}
           onSelectCandidate={handleSelectCandidate}
           onUpdateCandidates={setCandidates}
           onProceedToShortlist={() => setScreen('shortlist')}
           onBack={() => setScreen('home')}
-          roleName={jd?.title}
+          roleName={activeJd?.title}
           search={dashboardSearch} setSearch={setDashboardSearch}
           bucketFilter={dashboardBucketFilter} setBucketFilter={setDashboardBucketFilter}
           minScore={dashboardMinScore} setMinScore={setDashboardMinScore}
@@ -115,6 +173,7 @@ export default function App() {
           view={dashboardView} setView={setDashboardView}
         />
       )}
+
 
       {screen === 'candidate-detail' && selectedCandidate && (
         <CandidateDetail
@@ -129,7 +188,7 @@ export default function App() {
           candidates={candidates}
           onBack={() => setScreen('dashboard')}
           onRemove={handleRemoveFromShortlist}
-          roleName={jd?.title}
+          roleName={activeJd?.title}
         />
       )}
     </div>
