@@ -92,7 +92,7 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>AI Score:</span>
-                        <span style={{ fontSize: 20, fontWeight: 800, color: candidate.compositeScore >= 80 ? 'var(--strong-text)' : candidate.compositeScore >= 50 ? 'var(--potential-text)' : 'var(--low-text)' }}>{candidate.compositeScore}</span>
+                        <span style={{ fontSize: 20, fontWeight: 800, color: candidate.compositeScore >= 80 ? 'var(--strong-text)' : candidate.compositeScore >= 50 ? 'var(--potential-text)' : 'var(--low-text)' }}>{candidate.compositeScore}%</span>
                         <span className={`badge badge-${activeBucket}`} style={{ fontSize: 10 }}>{activeBucket === 'strong' ? 'Strong Match' : activeBucket === 'potential' ? 'Potential' : 'Limited'}</span>
                     </div>
                 </div>
