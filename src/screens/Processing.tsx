@@ -1,5 +1,5 @@
 // src/screens/Processing.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, FileText, Brain, BarChart3, Archive, Sparkles } from 'lucide-react';
 
 interface ProcessingProps {
@@ -53,9 +53,11 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
         },
     ];
 
+    const onCompleteRef = useRef(onComplete);
+    useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+
     useEffect(() => {
         let raf: number;
-        let elapsed = 0;
         let start: number | null = null;
         const total = stages.reduce((s, st) => s + st.duration, 0);
 
@@ -67,12 +69,13 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
 
         const animate = (timestamp: number) => {
             if (!start) start = timestamp;
-            elapsed = timestamp - start;
+            const elapsed = timestamp - start;
             const clampedElapsed = Math.min(elapsed, total);
 
-            // Overall
-            const op = (clampedElapsed / total) * 100;
-            setOverallProgress(op);
+            // Ensure visual progress never stays at 0 - show at least 2% after first frame
+            const rawPct = (clampedElapsed / total) * 100;
+            const op = elapsed > 0 ? Math.max(rawPct, 2) : 0;
+            setOverallProgress(op > 99 ? 100 : op);
 
             // Current stage
             let stageIdx = 0;
@@ -85,7 +88,7 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
 
             const prevCumulative = stageIdx === 0 ? 0 : stageCumulative[stageIdx - 1];
             const thisProgress = (clampedElapsed - prevCumulative) / stageDurations[stageIdx];
-            setStageProgress(Math.min(thisProgress * 100, 100));
+            setStageProgress(Math.min(Math.max(thisProgress * 100, elapsed > 0 ? 3 : 0), 100));
 
             // Processed count
             setProcessedCount(Math.floor((clampedElapsed / total) * fileCount));
@@ -93,15 +96,24 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
             if (elapsed < total) {
                 raf = requestAnimationFrame(animate);
             } else {
+                setOverallProgress(100);
+                setStageProgress(100);
                 setProcessedCount(fileCount);
                 setDone(true);
-                setTimeout(onComplete, 1200);
+                setTimeout(() => onCompleteRef.current(), 1200);
             }
         };
 
-        raf = requestAnimationFrame(animate);
-        return () => cancelAnimationFrame(raf);
-    }, [fileCount, onComplete]);
+        // Small initial delay ensures the component renders before animation starts
+        const timeout = setTimeout(() => {
+            raf = requestAnimationFrame(animate);
+        }, 50);
+
+        return () => {
+            clearTimeout(timeout);
+            cancelAnimationFrame(raf);
+        };
+    }, [fileCount, stages]);
 
     return (
         <div style={{

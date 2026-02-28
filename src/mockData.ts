@@ -107,116 +107,329 @@ export const jdLibrary: JobDescription[] = [
     },
 ];
 
-// Helper to generate realistic random names
-const firstNames = ['Amit', 'Priya', 'Suresh', 'Anjali', 'Vikram', 'Deepa', 'Rahul', 'Sneha', 'Karthik', 'Meera', 'Arjun', 'Riya', 'Sameer', 'Pooja', 'Vivek', 'Neha'];
-const lastNames = ['Sharma', 'Verma', 'Nair', 'Menon', 'Kapoor', 'Reddy', 'Singh', 'Patel', 'Das', 'Iyer', 'Gupta', 'Chaudhary', 'Joshi', 'Mishra'];
+// ─── Realistic Data Pools ─────────────────────────────────────────────────────
+
+const FIRST_NAMES = [
+    'Aarav', 'Aditi', 'Akash', 'Amrita', 'Ananya', 'Arjun', 'Arnav', 'Avni',
+    'Chirag', 'Deepika', 'Dev', 'Divya', 'Gaurav', 'Ishaan', 'Kavya', 'Kiran',
+    'Manish', 'Megha', 'Mihir', 'Nandini', 'Nikhil', 'Pallavi', 'Pranav', 'Priya',
+    'Rahul', 'Rajeev', 'Riya', 'Rohan', 'Sakshi', 'Sanya', 'Shweta', 'Siddharth',
+    'Sneha', 'Suresh', 'Tanvi', 'Tushar', 'Uday', 'Varun', 'Vikram', 'Yash',
+];
+
+const LAST_NAMES = [
+    'Agarwal', 'Bhatia', 'Chandra', 'Choudhary', 'Das', 'Deshpande', 'Gandhi',
+    'Gupta', 'Iyer', 'Jain', 'Joshi', 'Kapoor', 'Kaur', 'Khan', 'Kumar',
+    'Malik', 'Mehta', 'Menon', 'Mishra', 'Nair', 'Patel', 'Pillai', 'Rao',
+    'Reddy', 'Saxena', 'Shah', 'Sharma', 'Singh', 'Sinha', 'Srivastava',
+    'Tiwari', 'Varma', 'Verma',
+];
+
+const COMPANIES = [
+    'Razorpay', 'CRED', 'Zepto', 'Meesho', 'Swiggy', 'Zomato', 'PhonePe', 'Paytm',
+    'Flipkart', 'Ola', 'Udaan', 'Groww', 'Slice', 'Jupiter', 'Fi', 'Jar',
+    'BrowserStack', 'Postman', 'CleverTap', 'MoEngage', 'Whatfix', 'Darwinbox',
+    'Freshworks', 'Zoho', 'InfraCloud', 'HashedIn', 'ThoughtWorks', 'Sigmoid',
+    'Licious', 'Spinny', 'FarEye', 'Exotel', 'Airtel', 'Jio', 'Tata Digital',
+    'Infosys', 'Wipro', 'HCL Technologies', 'TCS Digital',
+];
+
+const PREV_COMPANIES = [
+    'Accenture', 'Deloitte', 'EY GDS', 'PwC Technology', 'Capgemini', 'Cognizant',
+    'Mphasis', 'Tech Mahindra', 'LTIMindtree', 'Hexaware', 'Persistent Systems',
+    'Publicis Sapient', 'GlobalLogic', 'Nagarro', 'EPAM Systems',
+];
+
+const ROLES = [
+    'Software Development Engineer II', 'Senior Software Engineer', 'Staff Engineer',
+    'Senior Full-Stack Engineer', 'Backend Engineer', 'Frontend Engineer',
+    'Platform Engineer', 'Site Reliability Engineer', 'Cloud Engineer',
+    'Technology Lead', 'Engineering Manager', 'Principal Engineer',
+];
+
+const PREV_ROLES = [
+    'Software Development Engineer', 'Junior Software Engineer', 'Associate Engineer',
+    'Software Engineer I', 'Graduate Engineer Trainee', 'Intern → Full-time',
+    'Full-Stack Developer', 'Backend Developer',
+];
+
+const LOCATIONS = [
+    'Bangalore', 'Hyderabad', 'Mumbai', 'Pune', 'Chennai', 'Delhi NCR',
+    'Gurgaon', 'Noida', 'Kolkata', 'Ahmedabad', 'Remote (India)',
+];
+
+const INSTITUTIONS = [
+    'IIT Bombay', 'IIT Delhi', 'IIT Madras', 'IIT Kanpur', 'IIT Kharagpur',
+    'IIT Roorkee', 'BITS Pilani', 'BITS Hyderabad', 'BITS Goa',
+    'NIT Trichy', 'NIT Surathkal', 'NIT Warangal', 'NIT Calicut',
+    'Delhi University', 'Mumbai University', 'Anna University',
+    'VIT Vellore', 'SRM University', 'Manipal University',
+    'Christ University', 'Amity University', 'Symbiosis Institute',
+];
+
+const EDUCATION_LEVELS = ['B.Tech (CS)', 'B.Tech (ECE)', 'B.E. (CS)', 'B.Sc (CS)', 'M.Tech (CS)', 'M.S. (CS)', 'MBA (Technology)', 'PhD (CS)'];
+
+const SENIORITIES = ['Mid', 'Mid', 'Senior', 'Senior', 'Senior', 'Lead', 'Entry'];
+const DOMAINS = ['Fintech', 'SaaS', 'E-commerce', 'Healthcare', 'EdTech', 'Logistics', 'B2B'];
+
+// ─── Realistic Work Summary Templates ─────────────────────────────────────────
+
+const CURRENT_SUMMARIES = [
+    (company: string, tech: string) => `Leading full-stack feature development on ${company}'s core product. Architected a microservice layer that reduced API response times by 38%. Mentors a team of 3 junior engineers and drives sprint planning alongside the product team. Tech stack: ${tech}.`,
+    (company: string, tech: string) => `Owns end-to-end delivery of ${company}'s internal tooling platform. Migrated a monolithic codebase to service-oriented architecture, cutting deployment frequency from bi-weekly to daily. Collaborates closely with infrastructure to maintain 99.9% SLA. Uses ${tech} extensively.`,
+    (company: string, tech: string) => `Senior contributor on ${company}'s growth engineering team. Built experimentation infrastructure that powers 50+ A/B tests per quarter. Drove a checkout flow redesign that increased conversion by 14%. Works primarily with ${tech}.`,
+    (company: string, tech: string) => `Technical lead on ${company}'s real-time data pipeline, processing over 2M events/day. Introduced event-driven patterns that improved system resilience during peak load. Instrumental in hiring 2 engineers this quarter. Stack: ${tech}.`,
+];
+
+const PREV_SUMMARIES = [
+    (company: string) => `Contributed to ${company}'s core platform team. Built RESTful APIs consumed by over 200k daily active users. Reduced database query latency by 40% through indexing strategy improvements.`,
+    (company: string) => `Worked within ${company}'s agile engineering team. Delivered 6 major feature releases across 2 product lines. Gained strong exposure to distributed systems and asynchronous job processing.`,
+    (company: string) => `Part of the early engineering team at ${company}. Developed foundational CRUD services, dashboard UI, and third-party integrations. Received "Best New Joiner" award in first year.`,
+    (company: string) => `Full-stack development at ${company}, primarily on customer-facing web applications. Improved frontend performance scores by 45% via code splitting and lazy loading. Collaborated with design team on component library.`,
+];
+
+const TECH_STACKS = [
+    'React, Node.js, TypeScript, PostgreSQL',
+    'Next.js, Express.js, MongoDB, Redis',
+    'React, Python (FastAPI), PostgreSQL, Docker',
+    'Vue.js, Node.js, TypeScript, MySQL',
+    'React, Node.js, GraphQL, AWS',
+];
+
+// ─── Score Reasoning Templates (50+ words each) ──────────────────────────────
+
+function skillAlignmentReasoning(score: number, max: number, matchedCount: number, totalRequired: number, company: string): string {
+    const pct = Math.round((score / max) * 100);
+    if (pct >= 85) {
+        return `Demonstrates strong coverage of all ${totalRequired} required skills, with direct production experience evidenced across current and prior roles at ${company} and earlier positions. Skill recency modifier is high — primary technologies appear in the most recent role, indicating active use rather than dated familiarity. Semantic alignment with the JD is very high across both must-haves and nice-to-haves.`;
+    } else if (pct >= 60) {
+        return `Covers ${matchedCount} of ${totalRequired} must-have skills. Missing skills are present in adjacent technologies, suggesting moderate adaptability. Recency modifier is partial — some flagged skills appeared only in older roles, indicating potential rust. Overall semantic similarity with the JD is moderate; cultural and domain context aligns well but technical depth is not fully evidenced.`;
+    } else {
+        return `Only ${matchedCount} of ${totalRequired} required skills are confirmed from the candidate's profile. Skill recency is low — required technologies are either absent or appear only in peripheral capacities. The semantic gap between the candidate's demonstrated stack and the JD requirements is significant, suggesting meaningful ramp-up time would be needed if hired.`;
+    }
+}
+
+function experienceAlignmentReasoning(score: number, max: number, yoe: number, minRequired: number, company: string): string {
+    const pct = Math.round((score / max) * 100);
+    if (pct >= 85) {
+        return `${yoe} years of total experience, with the majority spent in domain-aligned roles. Seniority level matches the JD expectation — has held senior or equivalent titles for at least 2 years. Job stability is strong with no tenures below 18 months. Work at ${company} and prior companies reflects increasing ownership of complex engineering problems with measurable business impact.`;
+    } else if (pct >= 60) {
+        return `${yoe} years of experience, of which approximately ${Math.round(yoe * 0.65)} are domain-aligned. Meets the minimum threshold of ${minRequired} years but falls short of the upper end of the range. Seniority alignment is partial — has performed senior-level tasks without formal title elevation. One short tenure noted in history which applies a minor stability penalty.`;
+    } else {
+        return `${yoe} years of experience, which is ${yoe < minRequired ? `below the ${minRequired}-year minimum threshold, making this candidate ineligible for the Strong Match bucket` : 'at the lower boundary of the acceptable range'}. Domain-aligned tenure is limited — much of the experience is in adjacent or unrelated sectors. Stability signal is mixed, with shorter average tenures indicating either early-career volatility or exploratory transitions.`;
+    }
+}
+
+function roleContextReasoning(score: number, max: number, company: string): string {
+    const pct = Math.round((score / max) * 100);
+    if (pct >= 80) {
+        return `Strong ownership signals detected across role descriptions — language such as "led", "architected", "owned", and "drove" appear in multiple positions, indicating senior individual contributor behavior. Scale indicators are present: mentions of user base in the millions, revenue-critical systems, and real-time processing. Responsibility classification: Senior IC with indirect team influence at ${company}.`;
+    } else if (pct >= 55) {
+        return `Moderate ownership signals. Candidate demonstrates initiative in some roles but lacks explicit scale indicators in their most recent position at ${company}. Responsibility level appears to be mid-level IC with some cross-team touchpoints. Language used in role descriptions is collaborative rather than directional, suggesting contributor rather than ownership mindset at this stage.`;
+    } else {
+        return `Limited scope and scale signals in role descriptions. Work at ${company} and prior positions reflects execution of well-scoped tasks with limited ambiguity or strategic ownership. No clear mentions of system-level impact, large-scale user bases, or architecture decision-making. Responsibility classification is junior to mid IC — aligns with roles requiring close guidance rather than autonomous delivery.`;
+    }
+}
+
+function trajectoryReasoning(score: number, max: number, yoe: number, company: string): string {
+    const pct = Math.round((score / max) * 100);
+    if (pct >= 80) {
+        return `Career trajectory is consistently upward across ${yoe} years, with clear domain progression. Title elevation has followed at expected velocity for the industry — approximately one promotion every 2–3 years, indicating strong performance recognition. Scope of responsibility has expanded meaningfully across each role. Directional consistency is high: ${company} and earlier positions all point toward a coherent full-stack engineering career with no lateral drift.`;
+    } else if (pct >= 55) {
+        return `Moderate trajectory signal across ${yoe} years. Some title progression detected, though not at a velocity that suggests above-average performance recognition relative to peers. Scope has grown, but evidence is primarily task-level rather than system-level. Domain direction is mostly consistent — ${company} role aligns with prior positions — however, one unrelated industry stint introduces mild directionality noise. Trajectory is healthy but not exceptional.`;
+    } else {
+        return `Trajectory signal is below expectations for the target seniority. With ${yoe} years of experience, title progression has been slow relative to industry peers — the current title at ${company} does not reflect the full-stack ownership typically seen at this tenure stage. Domain consistency is variable, with some lateral moves into unrelated sectors. Increasing responsibility over time is not clearly demonstrated through role descriptions or company scale.`;
+    }
+}
+
+// ─── Generate Realistic Mock Candidates ──────────────────────────────────────
 
 export const generateMockCandidates = (count: number, jd: JobDescription): Candidate[] => {
     const candidates: Candidate[] = [];
     const mustHaves = jd.mustHaveSkills;
 
     for (let i = 1; i <= count; i++) {
-        const fname = firstNames[Math.floor(Math.random() * firstNames.length)];
-        const lname = lastNames[Math.floor(Math.random() * lastNames.length)];
+        const fname = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
+        const lname = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
         const name = `${fname} ${lname}`;
-        const email = `${fname.toLowerCase()}.${lname.toLowerCase()}${i}@example.com`;
-        const yoe = Math.max(0, Math.floor(Math.random() * 12)); // 0-12 years
+        const email = `${fname.toLowerCase()}.${lname.toLowerCase()}${i}@gmail.com`;
 
-        // Skill alignment logic
+        const yoe = Math.max(1, Math.floor(Math.random() * 12) + 1);
+        const company = COMPANIES[Math.floor(Math.random() * COMPANIES.length)];
+        const prevCompany = PREV_COMPANIES[Math.floor(Math.random() * PREV_COMPANIES.length)];
+        const currentRole = ROLES[Math.floor(Math.random() * ROLES.length)];
+        const prevRole = PREV_ROLES[Math.floor(Math.random() * PREV_ROLES.length)];
+        const techStack = TECH_STACKS[Math.floor(Math.random() * TECH_STACKS.length)];
+
         const matchedSkills = mustHaves.filter(() => Math.random() > 0.3);
-        const violations = mustHaves.filter(s => !matchedSkills.includes(s));
-
+        const violations: string[] = mustHaves.filter(s => !matchedSkills.includes(s));
         if (yoe < jd.experienceMin) {
-            violations.push(`Experience below minimum (${yoe} years vs ${jd.experienceMin} required)`);
+            violations.push(`Experience below minimum (${yoe}y vs ${jd.experienceMin}y required)`);
         }
 
-        const score = Math.floor(Math.random() * 60) + 30;
-        const finalScore = Math.max(0, Math.min(100, score - (violations.length * 8)));
-
+        const baseScore = Math.floor(Math.random() * 55) + 35;
+        const finalScore = Math.max(10, Math.min(100, baseScore - (violations.length * 9)));
         let bucket: Bucket = 'low';
-        if (finalScore >= 80) bucket = 'strong';
+        if (finalScore >= 80 && violations.length === 0) bucket = 'strong';
         else if (finalScore >= 50) bucket = 'potential';
 
-        const seniorities = ['Entry', 'Mid', 'Senior', 'Lead', 'Director'];
-        const domains = ['Fintech', 'SaaS', 'Healthcare', 'E-commerce', 'EdTech'];
-        const educations = ['Bachelors', 'Masters', 'PhD'];
-        const institutions = ['IIT Delhi', 'BITS Pilani', 'NIT Surathkal', 'Delhi University', 'VIT Vellore', 'Stanford University', 'MIT', 'SRM University'];
+        const institution = INSTITUTIONS[Math.floor(Math.random() * INSTITUTIONS.length)];
+        const education = EDUCATION_LEVELS[Math.floor(Math.random() * EDUCATION_LEVELS.length)];
+        const location = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
+        const seniority = SENIORITIES[Math.floor(Math.random() * SENIORITIES.length)];
+        const domain = DOMAINS[Math.floor(Math.random() * DOMAINS.length)];
+
+        // Build realistic experience history based on years
+        const currentStart = 2026 - (yoe > 3 ? Math.min(4, Math.round(yoe * 0.5)) : yoe);
+        const prevEnd = currentStart;
+        const prevStart = prevEnd - Math.max(1, yoe - Math.round(yoe * 0.5));
+
+        const currentSummary = CURRENT_SUMMARIES[Math.floor(Math.random() * CURRENT_SUMMARIES.length)](company, techStack);
+        const prevSummary = PREV_SUMMARIES[Math.floor(Math.random() * PREV_SUMMARIES.length)](prevCompany);
+
+        const experienceHistory = [
+            {
+                role: currentRole,
+                company,
+                duration: `${currentStart} – Present`,
+                summary: currentSummary,
+            },
+            ...(yoe > 2 ? [{
+                role: prevRole,
+                company: prevCompany,
+                duration: `${prevStart} – ${prevEnd}`,
+                summary: prevSummary,
+            }] : []),
+        ];
+
+        const skillAlignScore = Math.round((finalScore / 100) * 40);
+        const expAlignScore = Math.round((finalScore / 100) * 30);
+        const roleContextScore = Math.round((finalScore / 100) * 15);
+        const trajectoryScore = Math.round((finalScore / 100) * 15);
 
         candidates.push({
             id: `gen-${i}`,
             name,
             email,
-            phone: `+91 9${Math.floor(100000000 + Math.random() * 900000000)}`,
-            currentRole: 'Software Engineer',
-            currentCompany: 'Tech Corp',
+            phone: `+91 ${Math.floor(7000000000 + Math.random() * 2999999999)}`,
+            currentRole,
+            currentCompany: company,
             yearsOfExperience: yoe,
-            location: 'Multiple',
-            seniority: seniorities[Math.floor(Math.random() * seniorities.length)],
-            domain: domains[Math.floor(Math.random() * domains.length)],
-            education: educations[Math.floor(Math.random() * educations.length)],
-            educationInstitution: institutions[Math.floor(Math.random() * institutions.length)],
-            isReferral: Math.random() < 0.15,
-            experienceHistory: [
-                {
-                    role: 'Full Stack Developer',
-                    company: 'InnovaTech Solutions',
-                    duration: '2022 – Present',
-                    summary: 'Leading frontend migration to Next.js and optimizing database queries for high-scale traffic.'
-                },
-                {
-                    role: 'Junior Engineer',
-                    company: 'DataStream Inc',
-                    duration: '2019 – 2022',
-                    summary: 'Developed core features for a real-time analytics dashboard used by 50+ enterprise clients.'
-                }
-            ],
-            skills: [...matchedSkills, 'JavaScript', 'HTML', 'CSS'],
+            location,
+            seniority,
+            domain,
+            education,
+            educationInstitution: institution,
+            isReferral: Math.random() < 0.12,
+            experienceHistory,
+            skills: [...matchedSkills, 'JavaScript', 'HTML', 'CSS', 'Git'],
             compositeScore: finalScore,
             bucket,
             dimensions: [
-                { label: 'Skill Alignment', score: Math.floor(finalScore * 0.4), max: 40, reasoning: finalScore > 70 ? 'Strong overlap with core stack. High proficiency in React and Node.js observed.' : 'Partial alignment with the core stack. Missing deep expertise in PostgreSQL or TypeScript.' },
-                { label: 'Relevant Experience', score: Math.floor(finalScore * 0.3), max: 30, reasoning: `Candidate has ${yoe} years of total experience across startups and mid-market firms.` },
-                { label: 'Role Context', score: Math.floor(finalScore * 0.15), max: 15, reasoning: 'Context match is solid — has worked in parallel industries with similar scale.' },
-                { label: 'Career Trajectory', score: Math.floor(finalScore * 0.15), max: 15, reasoning: 'Consistent growth pattern and steady transition across relevant engineering roles.' },
+                {
+                    label: 'Skill Alignment',
+                    score: skillAlignScore,
+                    max: 40,
+                    reasoning: skillAlignmentReasoning(skillAlignScore, 40, matchedSkills.length, mustHaves.length, company),
+                },
+                {
+                    label: 'Relevant Experience',
+                    score: expAlignScore,
+                    max: 30,
+                    reasoning: experienceAlignmentReasoning(expAlignScore, 30, yoe, jd.experienceMin, company),
+                },
+                {
+                    label: 'Role Context & Complexity',
+                    score: roleContextScore,
+                    max: 15,
+                    reasoning: roleContextReasoning(roleContextScore, 15, company),
+                },
+                {
+                    label: 'Career Trajectory',
+                    score: trajectoryScore,
+                    max: 15,
+                    reasoning: trajectoryReasoning(trajectoryScore, 15, yoe, company),
+                },
             ],
             mustHaveViolations: violations,
-            summary: `${name} shows ${finalScore >= 80 ? 'exceptional' : finalScore >= 50 ? 'significant' : 'limited'} alignment for this position. Their experience at ${yoe} years provides a ${yoe >= jd.experienceMin ? 'solid' : 'developing'} foundation. Core skill coverage is ${matchedSkills.length}/${mustHaves.length}.`,
+            summary: `${name} shows ${finalScore >= 80 ? 'strong' : finalScore >= 50 ? 'moderate' : 'limited'} alignment with this role. ${yoe} years of experience, currently ${currentRole} at ${company}. Matched ${matchedSkills.length}/${mustHaves.length} must-have skills.${violations.length > 0 ? ` Key gaps: ${violations.slice(0, 2).join(', ')}.` : ' No critical must-have violations identified.'}`,
             isShortlisted: false,
             isUnderHMReview: false,
-            resumeFileName: 'mock_resume.pdf'
+            resumeFileName: `${fname.toLowerCase()}_${lname.toLowerCase()}_resume.pdf`,
         });
     }
 
     return candidates;
 };
 
+// ─── Curated Showcase Candidates ─────────────────────────────────────────────
+
 export const mockCandidates: Candidate[] = [
     {
         id: 'c1',
         name: 'Aditya Sharma',
-        email: 'aditya.sharma@example.com',
+        email: 'aditya.sharma@gmail.com',
         phone: '+91 98765 43210',
-        currentRole: 'Senior Software Engineer',
+        currentRole: 'Senior Software Engineer (Full-Stack)',
         currentCompany: 'Razorpay',
         yearsOfExperience: 6,
         location: 'Bangalore',
-        education: 'B.Tech CS',
+        seniority: 'Senior',
+        domain: 'Fintech',
+        education: 'B.Tech (CS)',
         educationInstitution: 'IIT Bombay',
-        skills: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'GraphQL', 'AWS'],
+        isReferral: false,
+        skills: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'GraphQL', 'AWS', 'Redis', 'Docker'],
         compositeScore: 91,
         bucket: 'strong',
         experienceHistory: [
-            { role: 'Senior Software Engineer', company: 'Razorpay', duration: '2021 – Present', summary: 'Architected and built a high-throughput merchant dashboard using React and TypeScript. Optimized Node.js background processors reducing latency by 45%.' },
-            { role: 'Software Engineer', company: 'Zomato', duration: '2019 – 2021', summary: 'Contributed to the core ordering engine. Implemented real-time delivery tracking features using Node.js and Redis.' }
+            {
+                role: 'Senior Software Engineer',
+                company: 'Razorpay',
+                duration: '2021 – Present',
+                summary: `Architected and owns the merchant dashboard platform serving 8 million+ merchants across India. Led a full rewrite of the payment analytics service using Node.js and TypeScript, reducing average report generation time from 12s to 1.4s. Introduced a feature flagging system that now powers over 200 controlled rollouts per quarter. Mentors a team of 3 junior engineers and conducts bi-weekly design reviews.`,
+            },
+            {
+                role: 'Software Development Engineer II',
+                company: 'Zomato',
+                duration: '2019 – 2021',
+                summary: `Core contributor on Zomato's real-time delivery tracking infrastructure, handling 400k+ concurrent sessions during peak hours. Built the event-driven location pipeline using Node.js and Redis Pub/Sub. Led the migration of the rider notification system to a new queue-based architecture, improving delivery accuracy by 22%. Worked directly with the CTO's office on a high-visibility reliability initiative.`,
+            },
+            {
+                role: 'Software Engineer (Intern → Full-time)',
+                company: 'Freshworks',
+                duration: '2017 – 2019',
+                summary: `Joined as summer intern and converted to full-time upon graduation. Developed core CRUD APIs for Freshdesk's ticketing engine using Node.js and PostgreSQL. Improved frontend render performance by 35% through component memoization and lazy loading strategies. First engineer to introduce TypeScript in the team, which later became a team-wide standard.`,
+            },
         ],
         dimensions: [
-            { label: 'Skill Alignment', score: 37, max: 40, reasoning: 'Covers all 4 must-have skills. Strong match on React, Node.js, TypeScript, and PostgreSQL. Also proficient in GraphQL and AWS which are nice-to-haves. No skill gaps identified.' },
-            { label: 'Relevant Experience', score: 28, max: 30, reasoning: '6 years in full-stack roles at high-growth fintech companies. Led end-to-end feature delivery on payment infrastructure. Experience directly maps to the team\'s scale and complexity.' },
-            { label: 'Role Context', score: 13, max: 15, reasoning: 'Senior-level role at Razorpay — a directly comparable company in terms of technical depth and product scale. Has demonstrated ownership of critical product areas.' },
-            { label: 'Career Trajectory', score: 13, max: 15, reasoning: 'Clear upward progression: SDE1 → SDE2 → Senior in 6 years. Active GitHub contributor with production OSS usage. Trajectory indicates continued growth.' },
+            {
+                label: 'Skill Alignment',
+                score: 37,
+                max: 40,
+                reasoning: 'Covers all 4 required skills with evidence of active production use in the most recent role at Razorpay. TypeScript, React, and PostgreSQL appear across multiple positions, indicating deep, not superficial, familiarity. Also proficient in GraphQL and AWS which are JD nice-to-haves, further boosting semantic alignment. Recency modifier is maximum — all primary skills are actively used today.',
+            },
+            {
+                label: 'Relevant Experience',
+                score: 28,
+                max: 30,
+                reasoning: '6 years of experience in domain-aligned roles, all within high-scale fintech and consumer tech environments. Seniority alignment is strong — holds a Senior Engineer title with demonstrated scope that exceeds individual contribution. Stability signal is excellent: no tenure below 2 years across any position. Domain-aligned tenure is 100%, with all experience directly applicable to this JD\'s expectations.',
+            },
+            {
+                label: 'Role Context & Complexity',
+                score: 13,
+                max: 15,
+                reasoning: 'Strong ownership signals throughout — "architected", "owns", "led rewrite", and "mentors" appear in the primary role description. Scale indicators are present: 8 million+ merchants, 400k concurrent sessions, and 200 rollouts per quarter reflect real production complexity. Responsibility classification: Senior IC with active mentorship and cross-functional influence. Role context is directly comparable to the target position.',
+            },
+            {
+                label: 'Career Trajectory',
+                score: 13,
+                max: 15,
+                reasoning: 'Clear upward trajectory: Intern → SDE I → SDE II → Senior Engineer across 6 years, reflecting above-average promotion velocity. Scope of ownership has expanded at each step — from CRUD contributions at Freshworks to full platform ownership at Razorpay. Domain direction is consistent: all roles are in product engineering within high-growth consumer or fintech companies. No lateral drift or unexplained breaks in progression.',
+            },
         ],
         mustHaveViolations: [],
-        summary: 'Aditya is an exceptional match for this role. With 6 years of high-impact full-stack engineering at Razorpay, he covers all four must-have skills and brings direct fintech product experience. His career trajectory is consistently upward with no red flags, making him a strong candidate for immediate advancement.',
+        summary: 'Aditya is a high-fidelity match for this role. With 6 years of full-stack engineering experience at Razorpay and prior stints at Zomato and Freshworks, he covers every must-have skill with production-level depth. His ownership of a platform serving 8M+ merchants, combined with mentorship activity and consistent upward career progression, places him firmly in the Strong Match tier with no eligibility constraints.',
         isShortlisted: false,
         isUnderHMReview: false,
         resumeFileName: 'aditya_sharma_resume.pdf',
@@ -224,29 +437,62 @@ export const mockCandidates: Candidate[] = [
     {
         id: 'c2',
         name: 'Priya Nair',
-        email: 'priya.nair@example.com',
+        email: 'priya.nair@gmail.com',
         phone: '+91 91234 56789',
         currentRole: 'Full-Stack Engineer',
         currentCompany: 'CRED',
         yearsOfExperience: 4,
         location: 'Bangalore',
-        education: 'B.E. CS',
+        seniority: 'Mid',
+        domain: 'Fintech',
+        education: 'B.E. (CS)',
         educationInstitution: 'BITS Pilani',
-        skills: ['React', 'Node.js', 'TypeScript', 'MongoDB', 'Redis'],
+        isReferral: false,
+        skills: ['React', 'Node.js', 'TypeScript', 'MongoDB', 'Redis', 'GraphQL'],
         compositeScore: 78,
         bucket: 'potential',
         experienceHistory: [
-            { role: 'Full-Stack Engineer', company: 'CRED', duration: '2021 – Present', summary: 'Developed user onboarding flows and reward systems. Managed complex state transitions in React and scaled microservices in Node.js.' },
-            { role: 'Intern', company: 'Microsoft', duration: '2020 – 2021', summary: 'Worked on developer tools and VS Code extensions. Improved telemetry collection efficiency.' }
+            {
+                role: 'Full-Stack Engineer',
+                company: 'CRED',
+                duration: '2021 – Present',
+                summary: `Member of CRED's core credit management and onboarding squad. Designed and shipped the multi-step loan application flow, handling over 1 lakh submissions daily. Refactored the rewards redemption journey to reduce drop-off by 18%. Maintains the Node.js BFF layer that orchestrates 14 downstream microservices. Strong ownership of the React component library shared across 4 product squads.`,
+            },
+            {
+                role: 'Software Engineering Intern',
+                company: 'Microsoft',
+                duration: '2020 – 2021',
+                summary: `6-month internship within Microsoft's developer tooling division. Built a VS Code extension for real-time telemetry monitoring used by 1,200+ internal developers. Improved telemetry event batching efficiency by 28% through async processing refactors. Received a Pre-Placement Offer (PPO) on completion of the internship program.`,
+            },
         ],
         dimensions: [
-            { label: 'Skill Alignment', score: 30, max: 40, reasoning: 'Strong match on React, Node.js, and TypeScript. PostgreSQL gap is notable — she uses MongoDB primarily. Redis experience partially compensates for backend depth.' },
-            { label: 'Relevant Experience', score: 22, max: 30, reasoning: '4 years of full-stack experience. Currently at CRED, working on consumer-facing credit products. Good exposure but slightly below seniority expectations.' },
-            { label: 'Role Context', score: 14, max: 15, reasoning: 'CRED is a high-velocity product environment with strong engineering culture. Transferable context, though the infrastructure scale differs.' },
-            { label: 'Career Trajectory', score: 12, max: 15, reasoning: 'Steady progression. Led a rewrite of the onboarding flow at CRED. Some OSS activity. Trajectory is solid but not exceptional.' },
+            {
+                label: 'Skill Alignment',
+                score: 30,
+                max: 40,
+                reasoning: 'Strong on 3 of 4 required skills — React, Node.js, and TypeScript are all actively used in the current role at CRED. PostgreSQL is the primary gap: Priya\'s primary database is MongoDB, and no PostgreSQL exposure is evidenced in either position. Redis experience partially compensates for backend depth. Recency modifier for the 3 confirmed skills is high; the missing skill represents a meaningful but potentially bridgeable gap.',
+            },
+            {
+                label: 'Relevant Experience',
+                score: 22,
+                max: 30,
+                reasoning: '4 years of total experience, meeting the minimum JD threshold. All experience is in fintech-adjacent consumer credit products, which is directly relevant. Seniority alignment is partial — performing senior-level tasks at CRED without formal title uplift. Stability signal is good with no short tenures. Domain-aligned tenure is approximately 3.5 years, slightly below what would be expected for a Senior-level benchmark.',
+            },
+            {
+                label: 'Role Context & Complexity',
+                score: 14,
+                max: 15,
+                reasoning: 'Good ownership signals — "designed and shipped", "maintains", "strong ownership" are evidenced. Scale indicators are meaningful: 1 lakh daily submissions and a shared component library across 4 squads indicate real product complexity. Responsibility classification: Mid-level IC trending toward senior, with demonstrated system-level thinking. CRED is a credible engineering environment with high engineering standards.',
+            },
+            {
+                label: 'Career Trajectory',
+                score: 12,
+                max: 15,
+                reasoning: 'Solid trajectory from a high-pedigree internship (Microsoft PPO) into a mid-level role at CRED. Scope within CRED has expanded over 3 years. However, title growth has been limited to a single level since joining, which is slightly below average velocity for the peer group. Domain progression is consistent — fintech engineering throughout. Trajectory signal is healthy but not exceptional given the years of experience.',
+            },
         ],
         mustHaveViolations: ['PostgreSQL'],
-        summary: 'Priya is a capable full-stack engineer with 4 years of relevant experience at CRED. Her React and Node.js proficiency is solid, though the PostgreSQL gap warrants a technical discussion. Her fintech context and product sensibility are positives. Recommend advancing for a technical screen to assess database adaptability.',
+        summary: 'Priya is a capable full-stack engineer with 4 years of high-quality experience at CRED and a Microsoft internship credential. Her React and Node.js depth is strong and her fintech context is a direct positive. The PostgreSQL gap is the only material flag — her primary database exposure is MongoDB. A technical screening conversation focused on database adaptability would clarify fit before advancing.',
         isShortlisted: false,
         isUnderHMReview: false,
         resumeFileName: 'priya_nair_resume.pdf',
@@ -254,28 +500,62 @@ export const mockCandidates: Candidate[] = [
     {
         id: 'c3',
         name: 'Karthik Menon',
-        email: 'karthik.menon@example.com',
+        email: 'karthik.menon@gmail.com',
         phone: '+91 90000 11111',
-        currentRole: 'Frontend Engineer',
+        currentRole: 'Senior Frontend Engineer',
         currentCompany: 'PhonePe',
         yearsOfExperience: 5,
         location: 'Hyderabad',
-        education: 'B.Tech ECE',
+        seniority: 'Senior',
+        domain: 'Fintech',
+        education: 'B.Tech (ECE)',
         educationInstitution: 'NIT Trichy',
-        skills: ['React', 'TypeScript', 'CSS', 'Webpack', 'GraphQL'],
+        isReferral: false,
+        skills: ['React', 'TypeScript', 'CSS', 'Webpack', 'GraphQL', 'Next.js'],
         compositeScore: 54,
         bucket: 'potential',
         experienceHistory: [
-            { role: 'Frontend Engineer', company: 'PhonePe', duration: '2020 – Present', summary: 'Owned the merchant-facing UI for the payment portal. Specialized in high-performance React components and design system implementation.' }
+            {
+                role: 'Senior Frontend Engineer',
+                company: 'PhonePe',
+                duration: '2021 – Present',
+                summary: `Owns the merchant-facing payments portal at PhonePe, serving 35 million+ merchant partners. Delivered a full UI redesign reducing task completion time by 24%. Leads the design system effort — built 80+ reusable components adopted across 6 product teams. Has deep expertise in React performance optimization, including virtual DOM diffing, memoization, and bundle splitting strategy.`,
+            },
+            {
+                role: 'Frontend Developer',
+                company: 'Juspay',
+                duration: '2019 – 2021',
+                summary: `Built front-end checkout experiences for 10+ enterprise banking clients including HDFC and Axis Bank. Specialised in cross-browser compatibility and accessibility compliance (WCAG 2.1 AA). Introduced Storybook for component documentation, which became standard across the engineering team.`,
+            },
         ],
         dimensions: [
-            { label: 'Skill Alignment', score: 20, max: 40, reasoning: 'Strong React and TypeScript skills, but Node.js and PostgreSQL are absent. This is a significant gap for a full-stack role requiring backend ownership.' },
-            { label: 'Relevant Experience', score: 18, max: 30, reasoning: '5 years of experience, but predominantly frontend. Limited backend exposure is a mismatch for this Senior Full-Stack position.' },
-            { label: 'Role Context', score: 9, max: 15, reasoning: 'PhonePe is a credible context with strong product complexity. However, the frontend specialization limits direct applicability.' },
-            { label: 'Career Trajectory', score: 7, max: 15, reasoning: 'Stable progression as a frontend specialist. No clear signals of transitioning to full-stack roles in the term.' },
+            {
+                label: 'Skill Alignment',
+                score: 20,
+                max: 40,
+                reasoning: 'Strong on React and TypeScript but Node.js and PostgreSQL are absent from the profile — both are must-have requirements for this full-stack role. GraphQL knowledge is a partial compensator but does not address the backend gap. The candidate excels in frontend specialisation, and their skills are deeply demonstrated in that domain. However, the semantic alignment with this JD\'s backend requirements is significantly below threshold.',
+            },
+            {
+                label: 'Relevant Experience',
+                score: 18,
+                max: 30,
+                reasoning: '5 years of experience, but entirely frontend-focused. Domain-aligned tenure from a JD perspective is limited to the React and TypeScript dimensions; backend relevance is negligible. Seniority alignment is partial — holds a Senior title, but the role scope is frontend-only, which does not fully map to a full-stack senior expectation. No Node.js or database engineering experience is evidenced in any position across the career history.',
+            },
+            {
+                label: 'Role Context & Complexity',
+                score: 9,
+                max: 15,
+                reasoning: 'Frontend ownership signals are strong — "owns", "leads design system", and "35 million+ merchants" are meaningful. However, from a full-stack perspective, scope is limited to the UI layer. No backend systems ownership, API design, or database modelling signals are present. Responsibility classification is Senior IC within a frontend-only domain — directly applicable to frontend roles, less so to full-stack expectations.',
+            },
+            {
+                label: 'Career Trajectory',
+                score: 7,
+                max: 15,
+                reasoning: 'Career progression within frontend engineering is consistent and upward — from developer to senior is well-evidenced. However, the trajectory is narrowing, not expanding. There are no signals of transitioning toward full-stack capabilities, backend ownership, or broader architectural influence. For a full-stack role, the directionality does not support the target scope, and no lateral expansion steps are indicated.',
+            },
         ],
         mustHaveViolations: ['Node.js', 'PostgreSQL'],
-        summary: 'Karthik has strong frontend credentials and 5 years of experience at PhonePe, but the absence of Node.js and PostgreSQL represents a significant gap for this full-stack role. Recommend for a frontend-specific opening if one becomes available.',
+        summary: 'Karthik is a strong senior frontend engineer with impressive credentials from PhonePe and Juspay, but this is a full-stack role. The absence of Node.js and PostgreSQL experience represents a critical gap — both are must-have requirements. His profile would be an excellent fit for a frontend-focused or UI Lead position. Recommend re-routing rather than advancing for this specific opening.',
         isShortlisted: false,
         isUnderHMReview: false,
         resumeFileName: 'karthik_menon_resume.pdf',
@@ -283,28 +563,62 @@ export const mockCandidates: Candidate[] = [
     {
         id: 'c4',
         name: 'Sneha Kapoor',
-        email: 'sneha.kapoor@example.com',
+        email: 'sneha.kapoor@gmail.com',
         phone: '+91 88888 22222',
-        currentRole: 'Junior Developer',
-        currentCompany: 'StartupXYZ',
+        currentRole: 'Software Developer',
+        currentCompany: 'Licious',
         yearsOfExperience: 2,
-        location: 'Delhi',
-        education: 'B.Sc CS',
+        location: 'Delhi NCR',
+        seniority: 'Entry',
+        domain: 'E-commerce',
+        education: 'B.Sc (CS)',
         educationInstitution: 'Delhi University',
-        skills: ['JavaScript', 'React', 'HTML', 'CSS'],
+        isReferral: false,
+        skills: ['JavaScript', 'React', 'HTML', 'CSS', 'Firebase'],
         compositeScore: 31,
         bucket: 'low',
         experienceHistory: [
-            { role: 'Junior Developer', company: 'StartupXYZ', duration: '2023 – Present', summary: 'Building the company landing page and internal admin tools. Gaining experience in React and Firebase.' }
+            {
+                role: 'Software Developer',
+                company: 'Licious',
+                duration: '2024 – Present',
+                summary: `Works on the consumer web app for Licious's online meat delivery platform. Primarily responsible for front-end bug fixes and minor UI feature additions. Recently contributed to the new product listing page redesign under close guidance from a senior engineer.`,
+            },
+            {
+                role: 'Freelance Web Developer',
+                company: 'Self-employed',
+                duration: '2022 – 2024',
+                summary: `Developed and deployed small business websites for 8 local clients, primarily using HTML, CSS, and JavaScript. Built 2 WordPress-based e-commerce storefronts. Gained practical experience with responsive design and basic SEO optimisation.`,
+            },
         ],
         dimensions: [
-            { label: 'Skill Alignment', score: 10, max: 40, reasoning: 'Basic JavaScript and React only. TypeScript, Node.js, and PostgreSQL are all absent. The must-have coverage falls significantly short of role requirements.' },
-            { label: 'Relevant Experience', score: 9, max: 30, reasoning: '2 years of experience — significantly below the 4–8 year requirement. No exposure to production-scale engineering environments.' },
-            { label: 'Role Context', score: 7, max: 15, reasoning: 'Early-stage startup context. Limited complexity of the engineering challenges compared to role requirements.' },
-            { label: 'Career Trajectory', score: 5, max: 15, reasoning: 'Early career. Potential is unproven at this stage. Would need 2–3 more years of growth before being competitive.' },
+            {
+                label: 'Skill Alignment',
+                score: 10,
+                max: 40,
+                reasoning: 'Only React and JavaScript partially overlap with the JD requirements, and these are not evidenced at a depth expected for a Senior role. TypeScript, Node.js, and PostgreSQL are entirely absent from the profile — three of the four must-have skills are missing. Skill recency modifier is low: even the confirmed React exposure is at an introductory complexity level. Semantic alignment with the JD is significantly below the minimum threshold for advancement.',
+            },
+            {
+                label: 'Relevant Experience',
+                score: 9,
+                max: 30,
+                reasoning: '2 years of total experience, which is below the JD minimum of 4 years. This places the candidate in the eligibility-gated category, making them ineligible for the Strong Match bucket by definition. Domain-aligned tenure is minimal — freelance web work and early-stage product contributions do not constitute the enterprise engineering experience this role demands. Seniority alignment is very low; the current role is junior-level by scope and title.',
+            },
+            {
+                label: 'Role Context & Complexity',
+                score: 7,
+                max: 15,
+                reasoning: 'Role scope is limited to bug fixes and UI feature additions under close supervision, as evidenced in the current position at Licious. No ownership language, no scale indicators, and no cross-functional engagement signals are present. Freelance work involves low-complexity static sites and WordPress installations, which do not translate to the product engineering complexity expected for this role. Responsibility classification: junior IC, early career.',
+            },
+            {
+                label: 'Career Trajectory',
+                score: 5,
+                max: 15,
+                reasoning: 'Career trajectory is at a very early stage — 2 years in, with a non-traditional background starting from freelance work. Progression from freelance to an employed developer role is a positive signal of initiative, but there is no consistent upward title movement or scope expansion observable yet. Domain consistency is low — freelance work and product engineering are different environments. Trajectory potential is present but unproven at relevant scale.',
+            },
         ],
-        mustHaveViolations: ['Node.js', 'TypeScript', 'PostgreSQL', 'Experience below minimum (2 years vs 4 required)'],
-        summary: 'Sneha is at an early stage of her engineering career with 2 years of experience. While she shows initiative, the skill and experience gaps are substantial for this senior role. Not a match at this time — recommend revisiting in 2–3 years.',
+        mustHaveViolations: ['Node.js', 'TypeScript', 'PostgreSQL', 'Experience below minimum (2y vs 4y required)'],
+        summary: 'Sneha is at an early stage of her software engineering career. While her initiative in transitioning from freelance to a product company is encouraging, this role requires a minimum of 4 years of JD-aligned experience and all 4 must-have technical skills, of which she meets none fully. Not a match for this opening — recommend revisiting in 2–3 years with focused backend skill development.',
         isShortlisted: false,
         isUnderHMReview: false,
         resumeFileName: 'sneha_kapoor_resume.pdf',

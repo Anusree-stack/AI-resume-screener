@@ -2,7 +2,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Plus, X, Sparkles, Briefcase, MapPin, Clock } from 'lucide-react';
 import type { JobDescription } from '../types';
-import { mockJD } from '../mockData';
 
 // Skills Repository — comprehensive master list
 const SKILLS_REPO = [
@@ -147,15 +146,31 @@ function SkillTag({ label, onRemove, variant }: { label: string; onRemove: () =>
     );
 }
 
+const DEFAULT_JD_DESCRIPTION = `We are looking for a Senior Full-Stack Engineer to join our product engineering team. You will own end-to-end delivery of critical product features, collaborate closely with Product, Design, and Data teams, and mentor junior engineers.
+
+Key Responsibilities:
+- Design and build scalable, production-ready full-stack features using React, Node.js, TypeScript, and PostgreSQL
+- Lead technical design discussions and contribute to architecture decisions
+- Optimize backend performance and database query efficiency
+- Participate in sprint planning, code reviews, and cross-functional stakeholder meetings
+- Establish engineering best practices within the team
+
+Ideal Candidate:
+- 4–8 years of full-stack engineering experience in a product-led company
+- Strong proficiency in React and Node.js with TypeScript as the primary language
+- Experience with relational databases — PostgreSQL preferred
+- Comfortable with REST API design, microservices, and cloud infrastructure (AWS/GCP)
+- Experience in Fintech, SaaS, or high-growth consumer tech is a strong plus`;
+
 export default function JDSetup({ onSave, initialJd }: JDSetupProps) {
     const [jd, setJd] = useState<JobDescription>(initialJd || {
         id: `jd-${Date.now()}`,
-        title: '',
+        title: 'Senior Full-Stack Engineer',
         department: 'Engineering',
         location: 'Remote',
-        experienceMin: 2,
-        experienceMax: 5,
-        description: '',
+        experienceMin: 4,
+        experienceMax: 8,
+        description: DEFAULT_JD_DESCRIPTION,
         mustHaveSkills: [],
         niceToHave: [],
         status: 'Draft' as const,

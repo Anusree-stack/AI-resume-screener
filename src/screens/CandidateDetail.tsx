@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import {
     ArrowLeft, Star, MapPin, Clock, GraduationCap,
-    CheckCircle2, RotateCcw, HelpCircle, AlertCircle, FileText, X
+    CheckCircle2, RotateCcw, AlertCircle, FileText, X, ShieldCheck, ShieldAlert
 } from 'lucide-react';
 import type { Candidate, Bucket } from '../types';
 
@@ -21,6 +21,9 @@ const OVERRIDE_REASONS = [
     'Domain Expertise Recognised',
     'Other',
 ];
+
+const MUST_HAVE_SKILLS = ['React', 'Node.js', 'TypeScript', 'PostgreSQL'];
+const EXPERIENCE_MIN = 4;
 
 export default function CandidateDetail({ candidate, onBack, onUpdate }: CandidateDetailProps) {
     const [overrideOpen, setOverrideOpen] = useState(false);
@@ -46,6 +49,11 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
         fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase',
         letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 12,
     };
+
+    // Must-Have skill coverage
+    const foundSkills = MUST_HAVE_SKILLS.filter(s => candidate.skills.some(cs => cs.toLowerCase() === s.toLowerCase()));
+    const missingSkills = MUST_HAVE_SKILLS.filter(s => !foundSkills.includes(s));
+    const expGatePassed = candidate.yearsOfExperience >= EXPERIENCE_MIN;
 
     return (
         <div className="screen-fade" style={{ minHeight: 'calc(100vh - 60px)', background: 'var(--bg-primary)', paddingBottom: 100 }}>
@@ -73,15 +81,18 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
                         }}>
                             {candidate.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                         </div>
-                        <h1 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>{candidate.name}</h1>
+                        <div>
+                            <h1 style={{ fontSize: 16, fontWeight: 800, margin: 0 }}>{candidate.name}</h1>
+                            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{candidate.currentRole} · {candidate.currentCompany}</div>
+                        </div>
                     </div>
 
                     <div style={{ width: 1, height: 20, background: 'var(--border-subtle)' }} />
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>Score:</span>
-                        <span style={{ fontSize: 18, fontWeight: 800, color: candidate.compositeScore >= 80 ? 'var(--strong-text)' : candidate.compositeScore >= 50 ? 'var(--potential-text)' : 'var(--low-text)' }}>{candidate.compositeScore}</span>
-                        <span className={`badge badge-${activeBucket}`} style={{ fontSize: 10 }}>{activeBucket.toUpperCase()}</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>AI Score:</span>
+                        <span style={{ fontSize: 20, fontWeight: 800, color: candidate.compositeScore >= 80 ? 'var(--strong-text)' : candidate.compositeScore >= 50 ? 'var(--potential-text)' : 'var(--low-text)' }}>{candidate.compositeScore}</span>
+                        <span className={`badge badge-${activeBucket}`} style={{ fontSize: 10 }}>{activeBucket === 'strong' ? 'Strong Match' : activeBucket === 'potential' ? 'Potential' : 'Limited'}</span>
                     </div>
                 </div>
 
@@ -92,20 +103,20 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
                         style={{ fontSize: 13, height: 36, padding: '0 14px', borderColor: 'var(--accent-purple)', color: 'var(--accent-purple)' }}
                         id="detail-view-jd-btn"
                     >
-                        <FileText size={14} /> View Reference JD
+                        <FileText size={14} /> View JD
                     </button>
 
                     <div style={{ width: 1, height: 20, background: 'var(--border-subtle)' }} />
 
                     <button
                         onClick={toggleShortlist}
-                        className={candidate.isShortlisted ? 'btn-primary' : 'btn-secondary'}
                         style={{
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             padding: '0', width: 36, height: 36, borderRadius: 8,
                             background: candidate.isShortlisted ? 'var(--accent-amber)' : 'var(--bg-card)',
-                            borderColor: candidate.isShortlisted ? 'var(--accent-amber)' : 'var(--border-subtle)',
+                            border: `1px solid ${candidate.isShortlisted ? 'var(--accent-amber)' : 'var(--border-subtle)'}`,
                             color: candidate.isShortlisted ? '#fff' : 'var(--text-secondary)',
+                            cursor: 'pointer',
                         }}
                         id="detail-shortlist-btn"
                     >
@@ -143,7 +154,6 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
                             <RotateCcw size={20} color="var(--accent-purple)" />
                             <h3 style={{ fontSize: 18, fontWeight: 800 }}>Manual Reclassification</h3>
                         </div>
-
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32, marginBottom: 24 }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                 <label style={sectionLabel}>Target Bucket</label>
@@ -155,14 +165,16 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                 <label style={sectionLabel}>Primary Reason</label>
-                                <select className="input-field" value={overrideReason} onChange={e => setOverrideReason(e.target.value)} style={{ padding: '9px 12px', fontSize: 13 }}><option value="">Reason for change...</option>{OVERRIDE_REASONS.map(r => <option key={r} value={r}>{r}</option>)}</select>
+                                <select className="input-field" value={overrideReason} onChange={e => setOverrideReason(e.target.value)} style={{ padding: '9px 12px', fontSize: 13 }}>
+                                    <option value="">Reason for change...</option>
+                                    {OVERRIDE_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+                                </select>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                <label style={sectionLabel}>Justification</label>
-                                <textarea className="input-field" value={overrideNote} onChange={e => setOverrideNote(e.target.value)} placeholder="Min. 10 chars..." style={{ minHeight: 46, height: 46, padding: '10px 12px', fontSize: 13 }} />
+                                <label style={sectionLabel}>Justification (min. 10 chars)</label>
+                                <textarea className="input-field" value={overrideNote} onChange={e => setOverrideNote(e.target.value)} placeholder="Describe your reasoning..." style={{ minHeight: 46, height: 46, padding: '10px 12px', fontSize: 13 }} />
                             </div>
                         </div>
-
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
                             <button className="btn-secondary" onClick={() => setOverrideOpen(false)}>Cancel</button>
                             <button className="btn-primary" onClick={handleOverride} disabled={!canSaveOverride}><CheckCircle2 size={16} />Apply Changes</button>
@@ -174,13 +186,88 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
 
                     {/* LEFT: Analysis */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                        <div className="card" style={{ padding: '24px 28px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
-                                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--accent-purple-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><HelpCircle size={18} color="var(--accent-purple)" /></div>
-                                <h2 style={{ fontSize: 18, fontWeight: 800 }}>AI Analysis Summary</h2>
-                            </div>
-                            <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--text-primary)', marginBottom: 24 }}>{candidate.summary}</p>
 
+                        {/* AI Summary Card */}
+                        <div className="card" style={{ padding: '24px 28px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--accent-purple-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Star size={16} color="var(--accent-purple)" />
+                                </div>
+                                <h2 style={{ fontSize: 17, fontWeight: 800 }}>AI Analysis Summary</h2>
+                            </div>
+                            <p style={{ fontSize: 14.5, lineHeight: 1.8, color: 'var(--text-primary)' }}>{candidate.summary}</p>
+                        </div>
+
+                        {/* Must-Have Requirements gate */}
+                        <div className="card" style={{ padding: '24px 28px' }}>
+                            <p style={sectionLabel}>Must-Have Requirements Check</p>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+                                {/* Skill gate */}
+                                <div style={{ padding: 16, borderRadius: 12, background: missingSkills.length === 0 ? 'var(--strong-bg)' : 'var(--low-bg)', border: `1px solid ${missingSkills.length === 0 ? 'var(--strong-border)' : 'var(--low-border)'}` }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                                        {missingSkills.length === 0
+                                            ? <ShieldCheck size={16} color="var(--strong-text)" />
+                                            : <ShieldAlert size={16} color="var(--low-text)" />
+                                        }
+                                        <span style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', color: missingSkills.length === 0 ? 'var(--strong-text)' : 'var(--low-text)' }}>
+                                            Skill Gate: {missingSkills.length === 0 ? 'Passed' : 'Failed'}
+                                        </span>
+                                    </div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                        {MUST_HAVE_SKILLS.map(s => {
+                                            const found = foundSkills.includes(s);
+                                            return (
+                                                <span key={s} style={{
+                                                    display: 'flex', alignItems: 'center', gap: 4,
+                                                    padding: '3px 10px', borderRadius: 100, fontSize: 11.5, fontWeight: 600,
+                                                    background: found ? 'hsla(158,72%,42%,0.1)' : 'hsla(0,80%,55%,0.1)',
+                                                    color: found ? 'var(--strong-text)' : 'var(--low-text)',
+                                                    border: `1px solid ${found ? 'var(--strong-border)' : 'var(--low-border)'}`,
+                                                }}>
+                                                    {found ? '✓' : '✗'} {s}
+                                                </span>
+                                            );
+                                        })}
+                                    </div>
+                                    {missingSkills.length > 0 && (
+                                        <p style={{ fontSize: 11.5, color: 'var(--low-text)', margin: '10px 0 0', lineHeight: 1.5 }}>
+                                            Missing must-have{missingSkills.length > 1 ? 's' : ''}: candidate ineligible for Strong Match bucket.
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Experience gate */}
+                                <div style={{ padding: 16, borderRadius: 12, background: expGatePassed ? 'var(--strong-bg)' : 'var(--low-bg)', border: `1px solid ${expGatePassed ? 'var(--strong-border)' : 'var(--low-border)'}` }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                                        {expGatePassed
+                                            ? <ShieldCheck size={16} color="var(--strong-text)" />
+                                            : <ShieldAlert size={16} color="var(--low-text)" />
+                                        }
+                                        <span style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', color: expGatePassed ? 'var(--strong-text)' : 'var(--low-text)' }}>
+                                            Exp Gate: {expGatePassed ? 'Passed' : 'Failed'}
+                                        </span>
+                                    </div>
+                                    <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'Outfit, sans-serif', color: expGatePassed ? 'var(--strong-text)' : 'var(--low-text)', marginBottom: 4 }}>
+                                        {candidate.yearsOfExperience}y
+                                    </div>
+                                    <p style={{ fontSize: 11.5, color: expGatePassed ? 'var(--strong-text)' : 'var(--low-text)', lineHeight: 1.5, margin: 0 }}>
+                                        JD requires minimum {EXPERIENCE_MIN} years.
+                                        {!expGatePassed && ' Candidate is ineligible for Strong Match bucket.'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Overall eligibility */}
+                            <div style={{ padding: '10px 16px', borderRadius: 8, background: (missingSkills.length === 0 && expGatePassed) ? 'var(--strong-bg)' : 'var(--low-bg)', border: `1px solid ${(missingSkills.length === 0 && expGatePassed) ? 'var(--strong-border)' : 'var(--low-border)'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                {(missingSkills.length === 0 && expGatePassed)
+                                    ? <><ShieldCheck size={14} color="var(--strong-text)" /><span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--strong-text)' }}>All eligibility constraints met — candidate is eligible for Strong Match bucket.</span></>
+                                    : <><AlertCircle size={14} color="var(--low-text)" /><span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--low-text)' }}>One or more eligibility constraints not met — candidate is ineligible for Strong Match. Gating restricts bucket placement but does not remove from consideration.</span></>
+                                }
+                            </div>
+                        </div>
+
+                        {/* Score Breakdown */}
+                        <div className="card" style={{ padding: '24px 28px' }}>
                             <p style={sectionLabel}>Detailed Score Breakdown</p>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 {candidate.dimensions.map(dim => (
@@ -192,56 +279,28 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
                                         <div style={{ height: 4, background: 'var(--border-subtle)', borderRadius: 100, marginBottom: 12 }}>
                                             <div style={{ width: `${(dim.score / dim.max) * 100}%`, height: '100%', background: 'var(--accent-purple)', borderRadius: 100 }} />
                                         </div>
-                                        <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>{dim.reasoning}</p>
+                                        <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0 }}>{dim.reasoning}</p>
                                     </div>
                                 ))}
                             </div>
                         </div>
-
-                        <div className="card" style={{ padding: '24px 28px' }}>
-                            <p style={sectionLabel}>Key Strengths & Gaps</p>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                                <div style={{ background: 'var(--strong-bg)', padding: 16, borderRadius: 12, border: '1px solid var(--strong-border)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--strong-text)', marginBottom: 10, fontWeight: 800 }}>
-                                        <CheckCircle2 size={16} /> STRENGTHS
-                                    </div>
-                                    <ul style={{ margin: 0, paddingLeft: 16, fontSize: 13, color: 'var(--strong-text)', lineHeight: 1.6 }}>
-                                        <li>Strong match on core technical requirements</li>
-                                        <li>High proficiency in {candidate.skills.slice(0, 3).join(', ')}</li>
-                                        <li>Stable career progression at {candidate.currentCompany}</li>
-                                    </ul>
-                                </div>
-                                <div style={{ background: 'var(--low-bg)', padding: 16, borderRadius: 12, border: '1px solid var(--low-border)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--low-text)', marginBottom: 10, fontWeight: 800 }}>
-                                        <AlertCircle size={16} /> GAPS
-                                    </div>
-                                    <ul style={{ margin: 0, paddingLeft: 16, fontSize: 13, color: 'var(--low-text)', lineHeight: 1.6 }}>
-                                        {candidate.mustHaveViolations.length > 0 ? (
-                                            candidate.mustHaveViolations.map(v => <li key={v}>{v}</li>)
-                                        ) : (
-                                            <li>No critical violations identified.</li>
-                                        )}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
-                    {/* RIGHT: Experience */}
+                    {/* RIGHT: Context */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                         <div className="card" style={{ padding: '24px' }}>
                             <p style={sectionLabel}>Professional History</p>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, position: 'relative', paddingLeft: 12 }}>
-                                <div style={{ position: 'absolute', left: 0, top: 4, bottom: 4, width: 2, background: 'var(--border-subtle)' }} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, position: 'relative', paddingLeft: 16 }}>
+                                <div style={{ position: 'absolute', left: 4, top: 4, bottom: 4, width: 2, background: 'var(--border-subtle)' }} />
                                 {(candidate.experienceHistory || []).map((exp, i) => (
                                     <div key={i} style={{ position: 'relative' }}>
-                                        <div style={{ position: 'absolute', left: -16, top: 4, width: 10, height: 10, borderRadius: '50%', background: i === 0 ? 'var(--accent-purple)' : 'var(--bg-card)', border: `2px solid ${i === 0 ? 'var(--accent-purple)' : 'var(--border-subtle)'}` }} />
+                                        <div style={{ position: 'absolute', left: -20, top: 4, width: 10, height: 10, borderRadius: '50%', background: i === 0 ? 'var(--accent-purple)' : 'var(--bg-card)', border: `2px solid ${i === 0 ? 'var(--accent-purple)' : 'var(--border-subtle)'}` }} />
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                            <h4 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>{exp.role}</h4>
-                                            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)' }}>{exp.duration}</span>
+                                            <h4 style={{ fontSize: 13.5, fontWeight: 700, margin: 0 }}>{exp.role}</h4>
+                                            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', whiteSpace: 'nowrap', marginLeft: 8 }}>{exp.duration}</span>
                                         </div>
-                                        <div style={{ fontSize: 13, color: 'var(--accent-purple)', fontWeight: 600, marginBottom: 8 }}>{exp.company}</div>
-                                        <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{exp.summary}</p>
+                                        <div style={{ fontSize: 12.5, color: 'var(--accent-purple)', fontWeight: 600, marginBottom: 8 }}>{exp.company}</div>
+                                        <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>{exp.summary}</p>
                                     </div>
                                 ))}
                             </div>
@@ -249,7 +308,7 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
 
                         <div className="card" style={{ padding: '24px' }}>
                             <p style={sectionLabel}>Candidate Context</p>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                     <Clock size={16} color="var(--text-muted)" />
                                     <span style={{ fontSize: 13.5 }}>{candidate.yearsOfExperience}y Total Experience</span>
@@ -263,11 +322,10 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
                                     <span style={{ fontSize: 13.5 }}>{candidate.education} · {candidate.educationInstitution}</span>
                                 </div>
                             </div>
-
                             <div style={{ marginTop: 20 }}>
                                 <p style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 12 }}>Matched Skills</p>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                                    {candidate.skills.map(s => <span key={s} className="tag">{s}</span>)}
+                                    {candidate.skills.map(s => <span key={s} className="tag" style={{ fontSize: 11 }}>{s}</span>)}
                                 </div>
                             </div>
                         </div>
@@ -295,25 +353,30 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
                         </div>
                         <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
                             <div style={{ marginBottom: 24 }}>
-                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Role Summary</h4>
-                                <p style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6 }}>Senior Full-Stack Engineer</p>
+                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Role</h4>
+                                <p style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 700 }}>Senior Full-Stack Engineer</p>
+                                <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Engineering · Remote / Bangalore · 4–8 years</p>
                             </div>
-
                             <div style={{ marginBottom: 24 }}>
-                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Requirements</h4>
+                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Must-Have Skills</h4>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                                     {['React', 'Node.js', 'TypeScript', 'PostgreSQL'].map(s => (
-                                        <span key={s} style={{ padding: '4px 10px', borderRadius: 6, background: 'var(--accent-purple-dim)', color: 'var(--accent-purple)', fontSize: 12, fontWeight: 600 }}>{s}</span>
+                                        <span key={s} style={{ padding: '4px 10px', borderRadius: 6, background: 'var(--accent-purple-dim)', color: 'var(--accent-purple)', fontSize: 12, fontWeight: 600, border: '1px solid var(--border-glow)' }}>{s}</span>
                                     ))}
                                 </div>
                             </div>
-
                             <div style={{ marginBottom: 24 }}>
-                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Description</h4>
-                                <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-                                    We're looking for a Senior Full-Stack Engineer to join our product team. You'll work on mission-critical features, lead technical architecture decisions, and mentor junior engineers.
-                                    {"\n\n"}
-                                    You'll be embedded in a cross-functional team and collaborate closely with Product, Design, and Data.
+                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Nice-to-Have</h4>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                    {['GraphQL', 'AWS', 'Redis', 'Docker', 'System Design'].map(s => (
+                                        <span key={s} style={{ padding: '4px 10px', borderRadius: 6, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontSize: 12, fontWeight: 600, border: '1px solid var(--border-subtle)' }}>{s}</span>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Role Description</h4>
+                                <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+                                    {`We're looking for a Senior Full-Stack Engineer to join our product team. You'll work on mission-critical features, lead technical architecture decisions, and mentor junior engineers.\n\nYou'll collaborate closely with Product, Design, and Data in a cross-functional environment. Fintech or SaaS background is strongly preferred.`}
                                 </p>
                             </div>
                         </div>

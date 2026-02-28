@@ -29,8 +29,8 @@ const STAGE_BADGE_CLASS: Record<LifecycleStage, string> = {
 
 const STAGE_DISPLAY: Record<LifecycleStage, string> = {
     'Draft': 'Draft',
-    'Live – Accepting Applications': 'Live',
-    'Screening in Progress': 'Screening',
+    'Live – Accepting Applications': 'Live: Accepting Applications',
+    'Screening in Progress': 'AI Screening in Progress',
     'Interview': 'Interview',
     'Offer Extended': 'Offer Extended',
     'Offer Closed': 'Closed',
@@ -278,7 +278,7 @@ export default function Home({ jds, onNavigate }: HomeProps) {
                                         <td style={{ padding: '20px 24px', textAlign: 'right' }}>
                                             <button
                                                 className="btn-primary"
-                                                style={{ fontSize: 12.5, padding: '9px 18px', fontWeight: 700, minWidth: 110 }}
+                                                style={{ fontSize: 12.5, padding: '9px 20px', fontWeight: 700, minWidth: 130, whiteSpace: 'nowrap' }}
                                                 onClick={() => handleRowCTA(jd)}
                                                 id={`home-cta-${jd.id}`}
                                             >

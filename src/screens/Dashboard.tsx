@@ -91,9 +91,9 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
     const shortlistedCount = candidates.filter(c => c.isShortlisted).length;
     const strongCount = candidates.filter(c => (c.overriddenBucket ?? c.bucket) === 'strong').length;
     const potentialCount = candidates.filter(c => (c.overriddenBucket ?? c.bucket) === 'potential').length;
-    const avgScore = candidates.length ? Math.round(candidates.reduce((s, c) => s + c.compositeScore, 0) / candidates.length) : 0;
     const pctStrong = candidates.length ? Math.round((strongCount / candidates.length) * 100) : 0;
     const pctPotential = candidates.length ? Math.round((potentialCount / candidates.length) * 100) : 0;
+    const batchTAT = candidates.length > 50 ? '< 4 min' : '< 90 sec';
 
     const selectStyle: React.CSSProperties = {
         padding: '6px 28px 6px 10px',
@@ -159,7 +159,7 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                         { label: 'Total Applications', value: candidates.length, color: undefined },
                         { label: '% Strong Match', value: `${pctStrong}%`, color: 'var(--strong-text)' },
                         { label: '% Potential', value: `${pctPotential}%`, color: 'var(--potential-text)' },
-                        { label: 'Avg AI Score', value: `${avgScore}%`, color: 'var(--accent-purple)' },
+                        { label: 'Batch Screening TAT', value: batchTAT, color: 'var(--accent-purple)' },
                     ].map(stat => (
                         <div key={stat.label} className="card metric-card" style={{ padding: '14px 18px' }}>
                             <div style={{ fontSize: 24, fontWeight: 800, fontFamily: 'Outfit, sans-serif', color: stat.color || 'var(--text-primary)', letterSpacing: '-0.02em' }}>{stat.value}</div>

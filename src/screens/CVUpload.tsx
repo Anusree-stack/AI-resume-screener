@@ -29,6 +29,8 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
     const [actionCenterTab, setActionCenterTab] = useState(false);
     const [acSelected, setAcSelected] = useState<Set<string>>(new Set());
     const [acImported, setAcImported] = useState(false);
+    // NOTE: acImported is intentionally false by default. The banner only appears
+    // after user explicitly imports from the Action Center tab.
 
     const onDrop = useCallback((accepted: File[]) => {
         setFiles(prev => [...prev, ...accepted.map(f => ({ name: f.name, size: f.size }))]);
