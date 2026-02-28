@@ -43,6 +43,10 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
     });
 
     const removeFile = (name: string) => setFiles(prev => prev.filter(f => f.name !== name));
+    const clearAllFiles = () => {
+        setFiles([]);
+        setAcImported(false); // also hide the success banner when files are cleared
+    };
     const formatBytes = (bytes: number) => bytes > 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${(bytes / 1024).toFixed(0)} KB`;
 
     const toggleAcCandidate = (name: string) => {
@@ -290,7 +294,7 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
                                 <CheckCircle2 size={15} color="var(--accent-green)" />
                                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{files.length} resume{files.length !== 1 ? 's' : ''} ready</span>
                             </div>
-                            <button className="btn-ghost" onClick={() => setFiles([])} style={{ fontSize: 12 }} id="clear-files-btn">Clear all</button>
+                            <button className="btn-ghost" onClick={clearAllFiles} style={{ fontSize: 12 }} id="clear-files-btn">Clear all</button>
                         </div>
                         <div className="card" style={{ padding: 16, maxHeight: 240, overflowY: 'auto' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

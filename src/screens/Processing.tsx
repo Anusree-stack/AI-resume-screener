@@ -7,13 +7,20 @@ interface ProcessingProps {
     onComplete: () => void;
 }
 
-interface Stage {
-    id: string;
-    label: string;
-    sublabel: string;
-    icon: React.ReactNode;
-    duration: number; // ms to complete this stage
-}
+// ─── Static stage config (outside component to keep stable reference) ─────────
+const STAGE_CONFIG = [
+    { id: 'extracting', label: 'Extracting Text', duration: 1800 },
+    { id: 'analyzing', label: 'AI Analysis', duration: 2400 },
+    { id: 'scoring', label: 'Computing Scores', duration: 1500 },
+    { id: 'bucketing', label: 'Assigning Buckets', duration: 800 },
+];
+
+const TOTAL_DURATION = STAGE_CONFIG.reduce((s, st) => s + st.duration, 0);
+
+const STAGE_CUMULATIVE = STAGE_CONFIG.reduce<number[]>((acc, s, i) => {
+    acc.push((acc[i - 1] ?? 0) + s.duration);
+    return acc;
+}, []);
 
 export default function Processing({ fileCount, onComplete }: ProcessingProps) {
     const [currentStage, setCurrentStage] = useState(0);
@@ -22,78 +29,41 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
     const [done, setDone] = useState(false);
     const [processedCount, setProcessedCount] = useState(0);
 
-    const stages: Stage[] = [
-        {
-            id: 'extracting',
-            label: 'Extracting Text',
-            sublabel: `Parsing ${fileCount} resume${fileCount !== 1 ? 's' : ''} into structured data`,
-            icon: <FileText size={18} />,
-            duration: 1800,
-        },
-        {
-            id: 'analyzing',
-            label: 'AI Analysis',
-            sublabel: 'Running skill alignment and context scoring',
-            icon: <Brain size={18} />,
-            duration: 2400,
-        },
-        {
-            id: 'scoring',
-            label: 'Computing Scores',
-            sublabel: 'Calculating composite scores across 4 dimensions',
-            icon: <BarChart3 size={18} />,
-            duration: 1500,
-        },
-        {
-            id: 'bucketing',
-            label: 'Assigning Buckets',
-            sublabel: 'Classifying candidates into Strong / Potential / Low',
-            icon: <Archive size={18} />,
-            duration: 800,
-        },
-    ];
-
+    // Keep onComplete stable so it doesn't restart the effect
     const onCompleteRef = useRef(onComplete);
     useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
 
     useEffect(() => {
         let raf: number;
         let start: number | null = null;
-        const total = stages.reduce((s, st) => s + st.duration, 0);
-
-        const stageDurations = stages.map(s => s.duration);
-        const stageCumulative = stageDurations.reduce<number[]>((acc, d, i) => {
-            acc.push((acc[i - 1] ?? 0) + d);
-            return acc;
-        }, []);
 
         const animate = (timestamp: number) => {
             if (!start) start = timestamp;
             const elapsed = timestamp - start;
-            const clampedElapsed = Math.min(elapsed, total);
+            const clamped = Math.min(elapsed, TOTAL_DURATION);
 
-            // Ensure visual progress never stays at 0 - show at least 2% after first frame
-            const rawPct = (clampedElapsed / total) * 100;
-            const op = elapsed > 0 ? Math.max(rawPct, 2) : 0;
-            setOverallProgress(op > 99 ? 100 : op);
+            // Overall progress — start from 1% on first frame so bar is visibly moving
+            const pct = (clamped / TOTAL_DURATION) * 100;
+            setOverallProgress(elapsed > 0 ? Math.max(pct, 1) : 0);
 
-            // Current stage
-            let stageIdx = 0;
-            for (let i = 0; i < stageCumulative.length; i++) {
-                if (clampedElapsed >= stageCumulative[i]) stageIdx = i + 1;
+            // Resolve current stage index
+            let idx = 0;
+            for (let i = 0; i < STAGE_CUMULATIVE.length; i++) {
+                if (clamped >= STAGE_CUMULATIVE[i]) idx = i + 1;
                 else break;
             }
-            stageIdx = Math.min(stageIdx, stages.length - 1);
-            setCurrentStage(stageIdx);
+            idx = Math.min(idx, STAGE_CONFIG.length - 1);
+            setCurrentStage(idx);
 
-            const prevCumulative = stageIdx === 0 ? 0 : stageCumulative[stageIdx - 1];
-            const thisProgress = (clampedElapsed - prevCumulative) / stageDurations[stageIdx];
-            setStageProgress(Math.min(Math.max(thisProgress * 100, elapsed > 0 ? 3 : 0), 100));
+            // Per-stage progress
+            const prevCum = idx === 0 ? 0 : STAGE_CUMULATIVE[idx - 1];
+            const stagePct = ((clamped - prevCum) / STAGE_CONFIG[idx].duration) * 100;
+            setStageProgress(Math.min(Math.max(stagePct, elapsed > 0 ? 2 : 0), 100));
 
-            // Processed count
-            setProcessedCount(Math.floor((clampedElapsed / total) * fileCount));
+            // Processed candidate count
+            setProcessedCount(Math.round((clamped / TOTAL_DURATION) * fileCount));
 
-            if (elapsed < total) {
+            if (elapsed < TOTAL_DURATION) {
                 raf = requestAnimationFrame(animate);
             } else {
                 setOverallProgress(100);
@@ -104,16 +74,22 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
             }
         };
 
-        // Small initial delay ensures the component renders before animation starts
-        const timeout = setTimeout(() => {
-            raf = requestAnimationFrame(animate);
-        }, 50);
+        // 60ms delay so the component mounts and renders before animation
+        const t = setTimeout(() => { raf = requestAnimationFrame(animate); }, 60);
 
         return () => {
-            clearTimeout(timeout);
+            clearTimeout(t);
             cancelAnimationFrame(raf);
         };
-    }, [fileCount, stages]);
+    }, [fileCount]); // ← only fileCount, not stages (stable now)
+
+    // Render-time: combine static config with dynamic sublabel and icon
+    const stages = [
+        { ...STAGE_CONFIG[0], sublabel: `Parsing ${fileCount} resume${fileCount !== 1 ? 's' : ''} into structured data`, icon: <FileText size={18} /> },
+        { ...STAGE_CONFIG[1], sublabel: 'Running skill alignment and context scoring', icon: <Brain size={18} /> },
+        { ...STAGE_CONFIG[2], sublabel: 'Calculating composite scores across 4 dimensions', icon: <BarChart3 size={18} /> },
+        { ...STAGE_CONFIG[3], sublabel: 'Classifying candidates into Strong / Potential / Low', icon: <Archive size={18} /> },
+    ];
 
     return (
         <div style={{
@@ -157,7 +133,7 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-purple)' }}>{Math.round(overallProgress)}%</span>
                     </div>
                     <div className="progress-bar" style={{ height: 6 }}>
-                        <div className="progress-fill" style={{ width: `${overallProgress}%` }} />
+                        <div className="progress-fill" style={{ width: `${overallProgress}%`, transition: 'width 120ms linear' }} />
                     </div>
                 </div>
 
@@ -201,7 +177,7 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
                                     <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{stage.sublabel}</p>
                                     {isActive && (
                                         <div className="progress-bar" style={{ marginTop: 10 }}>
-                                            <div className="progress-fill" style={{ width: `${stageProgress}%` }} />
+                                            <div className="progress-fill" style={{ width: `${stageProgress}%`, transition: 'width 120ms linear' }} />
                                         </div>
                                     )}
                                 </div>
