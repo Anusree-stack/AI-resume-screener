@@ -448,108 +448,101 @@ export default function Dashboard({
                     )}
                 </div>
             </div>
-        </>
 
-        {/* Bulk Action Bar — at fragment root so position:fixed works vs viewport */ }
-    {
-        selectedIds.size > 0 && (() => {
-            const allSelectedShortlisted = [...selectedIds].every(
-                id => candidates.find(c => c.id === id)?.isShortlisted
-            );
-            return (
-                <div style={{
-                    position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
-                    background: 'var(--bg-card)',
-                    border: `1px solid ${allSelectedShortlisted ? 'hsl(0,72%,55%)' : 'var(--accent-purple)'}`,
-                    borderRadius: 14, padding: '12px 24px',
-                    display: 'flex', alignItems: 'center', gap: 18,
-                    boxShadow: `0 8px 32px ${allSelectedShortlisted ? 'hsla(0,72%,55%,0.18)' : 'hsla(262,72%,52%,0.22)'}, 0 2px 8px hsla(0,0%,0%,0.15)`,
-                    zIndex: 9999, backdropFilter: 'blur(16px)', whiteSpace: 'nowrap',
-                }}>
-                    <Star size={15} color={allSelectedShortlisted ? 'hsl(0,72%,55%)' : 'var(--accent-amber)'} fill={allSelectedShortlisted ? 'hsl(0,72%,55%)' : 'var(--accent-amber)'} />
-                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
-                        {selectedIds.size} candidate{selectedIds.size !== 1 ? 's' : ''} selected
-                    </span>
-                    {allSelectedShortlisted ? (
-                        <button
-                            className="btn-ghost"
-                            style={{ fontSize: 13, padding: '8px 20px', color: 'hsl(0,72%,55%)', border: '1px solid hsl(0,72%,55%)', borderRadius: 8 }}
-                            onClick={() => { onUpdateCandidates(candidates.map(c => selectedIds.has(c.id) ? { ...c, isShortlisted: false } : c)); setSelectedIds(new Set()); }}
-                            id="remove-shortlist-btn"
-                        >
-                            <Star size={13} /> Remove from Shortlist
+            {/* Bulk Action Bar — at fragment root, position:fixed vs true viewport */}
+            {selectedIds.size > 0 && (() => {
+                const allSelectedShortlisted = [...selectedIds].every(
+                    id => candidates.find(c => c.id === id)?.isShortlisted
+                );
+                return (
+                    <div style={{
+                        position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+                        background: 'var(--bg-card)',
+                        border: `1px solid ${allSelectedShortlisted ? 'hsl(0,72%,55%)' : 'var(--accent-purple)'}`,
+                        borderRadius: 14, padding: '12px 24px',
+                        display: 'flex', alignItems: 'center', gap: 18,
+                        boxShadow: `0 8px 32px ${allSelectedShortlisted ? 'hsla(0,72%,55%,0.18)' : 'hsla(262,72%,52%,0.22)'}, 0 2px 8px hsla(0,0%,0%,0.15)`,
+                        zIndex: 9999, backdropFilter: 'blur(16px)', whiteSpace: 'nowrap',
+                    }}>
+                        <Star size={15} color={allSelectedShortlisted ? 'hsl(0,72%,55%)' : 'var(--accent-amber)'} fill={allSelectedShortlisted ? 'hsl(0,72%,55%)' : 'var(--accent-amber)'} />
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+                            {selectedIds.size} candidate{selectedIds.size !== 1 ? 's' : ''} selected
+                        </span>
+                        {allSelectedShortlisted ? (
+                            <button
+                                className="btn-ghost"
+                                style={{ fontSize: 13, padding: '8px 20px', color: 'hsl(0,72%,55%)', border: '1px solid hsl(0,72%,55%)', borderRadius: 8 }}
+                                onClick={() => { onUpdateCandidates(candidates.map(c => selectedIds.has(c.id) ? { ...c, isShortlisted: false } : c)); setSelectedIds(new Set()); }}
+                                id="remove-shortlist-btn"
+                            >
+                                <Star size={13} /> Remove from Shortlist
+                            </button>
+                        ) : (
+                            <button className="btn-primary" style={{ fontSize: 13, padding: '8px 20px' }} onClick={() => setShowShortlistModal(true)} id="shortlist-selected-btn">
+                                <Star size={13} /> Shortlist Selected
+                            </button>
+                        )}
+                        <button className="btn-ghost" style={{ fontSize: 12 }} onClick={() => setSelectedIds(new Set())} id="clear-selection-btn">
+                            <X size={12} /> Clear
                         </button>
-                    ) : (
-                        <button className="btn-primary" style={{ fontSize: 13, padding: '8px 20px' }} onClick={() => setShowShortlistModal(true)} id="shortlist-selected-btn">
-                            <Star size={13} /> Shortlist Selected
-                        </button>
-                    )}
-                    <button className="btn-ghost" style={{ fontSize: 12 }} onClick={() => setSelectedIds(new Set())} id="clear-selection-btn">
-                        <X size={12} /> Clear
-                    </button>
-                </div>
-            );
-        })()
-    }
-
-    {/* Shortlist Confirmation Modal */ }
-    {
-        showShortlistModal && (
-            <div style={{ position: 'fixed', inset: 0, background: 'hsla(220,30%,10%,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, backdropFilter: 'blur(4px)' }}>
-                <div className="card" style={{ padding: '28px 32px', maxWidth: 400, width: '90%' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                        <Star size={18} color="var(--accent-amber)" fill="var(--accent-amber)" />
-                        <h3 style={{ fontSize: 16, fontWeight: 700 }}>Shortlist Candidates</h3>
                     </div>
-                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: 22 }}>
-                        <strong style={{ color: 'var(--text-primary)' }}>{selectedIds.size} candidate{selectedIds.size !== 1 ? 's' : ''}</strong> will be added to your shortlist for this role.
-                    </p>
-                    <div style={{ display: 'flex', gap: 10 }}>
-                        <button className="btn-primary" style={{ flex: 1, fontSize: 14 }} onClick={confirmShortlist} id="confirm-shortlist-btn"><Star size={13} /> Add to Shortlist</button>
-                        <button className="btn-secondary" style={{ flex: 1, fontSize: 14 }} onClick={() => setShowShortlistModal(false)} id="cancel-shortlist-btn">Cancel</button>
+                );
+            })()}
+
+            {/* Shortlist Confirmation Modal */}
+            {showShortlistModal && (
+                <div style={{ position: 'fixed', inset: 0, background: 'hsla(220,30%,10%,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, backdropFilter: 'blur(4px)' }}>
+                    <div className="card" style={{ padding: '28px 32px', maxWidth: 400, width: '90%' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                            <Star size={18} color="var(--accent-amber)" fill="var(--accent-amber)" />
+                            <h3 style={{ fontSize: 16, fontWeight: 700 }}>Shortlist Candidates</h3>
+                        </div>
+                        <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: 22 }}>
+                            <strong style={{ color: 'var(--text-primary)' }}>{selectedIds.size} candidate{selectedIds.size !== 1 ? 's' : ''}</strong> will be added to your shortlist for this role.
+                        </p>
+                        <div style={{ display: 'flex', gap: 10 }}>
+                            <button className="btn-primary" style={{ flex: 1, fontSize: 14 }} onClick={confirmShortlist} id="confirm-shortlist-btn"><Star size={13} /> Add to Shortlist</button>
+                            <button className="btn-secondary" style={{ flex: 1, fontSize: 14 }} onClick={() => setShowShortlistModal(false)} id="cancel-shortlist-btn">Cancel</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        )
-    }
+            )}
 
-    {/* JD Reference Side Panel */ }
-    {
-        isJDOpen && (
-            <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', justifyContent: 'flex-end' }}>
-                <div onClick={() => setIsJDOpen(false)} style={{ position: 'absolute', inset: 0, background: 'hsla(220,30%,10%,0.4)', backdropFilter: 'blur(2px)' }} />
-                <div className="screen-fade" style={{ position: 'relative', width: 480, height: '100%', background: 'var(--bg-card)', borderLeft: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-lg)' }}>
-                    <div style={{ padding: '24px 32px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div>
-                            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Reference Material</div>
-                            <h3 style={{ fontSize: 16, fontWeight: 700 }}>Job Description</h3>
+            {/* JD Reference Side Panel */}
+            {isJDOpen && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', justifyContent: 'flex-end' }}>
+                    <div onClick={() => setIsJDOpen(false)} style={{ position: 'absolute', inset: 0, background: 'hsla(220,30%,10%,0.4)', backdropFilter: 'blur(2px)' }} />
+                    <div className="screen-fade" style={{ position: 'relative', width: 480, height: '100%', background: 'var(--bg-card)', borderLeft: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-lg)' }}>
+                        <div style={{ padding: '24px 32px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div>
+                                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Reference Material</div>
+                                <h3 style={{ fontSize: 16, fontWeight: 700 }}>Job Description</h3>
+                            </div>
+                            <button onClick={() => setIsJDOpen(false)} style={{ background: 'var(--bg-secondary)', border: 'none', padding: 8, borderRadius: 8, cursor: 'pointer', color: 'var(--text-muted)' }}><X size={18} /></button>
                         </div>
-                        <button onClick={() => setIsJDOpen(false)} style={{ background: 'var(--bg-secondary)', border: 'none', padding: 8, borderRadius: 8, cursor: 'pointer', color: 'var(--text-muted)' }}><X size={18} /></button>
-                    </div>
-                    <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
-                        <div style={{ marginBottom: 24 }}>
-                            <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Role Summary</h4>
-                            <p style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6 }}>{roleName || 'Senior Full-Stack Engineer'}</p>
-                        </div>
-                        <div style={{ marginBottom: 24 }}>
-                            <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Must-Have Skills</h4>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                                {(jd?.mustHaveSkills ?? ['React', 'Node.js', 'TypeScript', 'PostgreSQL']).map(s => (
-                                    <span key={s} style={{ padding: '4px 10px', borderRadius: 6, background: 'var(--accent-purple-dim)', color: 'var(--accent-purple)', fontSize: 12, fontWeight: 600 }}>{s}</span>
-                                ))}
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
+                            <div style={{ marginBottom: 24 }}>
+                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Role Summary</h4>
+                                <p style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6 }}>{roleName || 'Senior Full-Stack Engineer'}</p>
+                            </div>
+                            <div style={{ marginBottom: 24 }}>
+                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Must-Have Skills</h4>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                    {(jd?.mustHaveSkills ?? ['React', 'Node.js', 'TypeScript', 'PostgreSQL']).map(s => (
+                                        <span key={s} style={{ padding: '4px 10px', borderRadius: 6, background: 'var(--accent-purple-dim)', color: 'var(--accent-purple)', fontSize: 12, fontWeight: 600 }}>{s}</span>
+                                    ))}
+                                </div>
+                            </div>
+                            <div style={{ marginBottom: 24 }}>
+                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Description</h4>
+                                <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+                                    We're looking for a Senior Full-Stack Engineer to join our product team. You'll work on mission-critical features, lead technical architecture decisions, and mentor junior engineers.{'\n\n'}You'll be embedded in a cross-functional team and collaborate closely with Product, Design, and Data.
+                                </p>
                             </div>
                         </div>
-                        <div style={{ marginBottom: 24 }}>
-                            <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Description</h4>
-                            <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-                                We're looking for a Senior Full-Stack Engineer to join our product team. You'll work on mission-critical features, lead technical architecture decisions, and mentor junior engineers.{'\n\n'}You'll be embedded in a cross-functional team and collaborate closely with Product, Design, and Data.
-                            </p>
-                        </div>
                     </div>
                 </div>
-            </div>
-        )
-    }
-    </>
+            )}
+        </>
     );
 }
