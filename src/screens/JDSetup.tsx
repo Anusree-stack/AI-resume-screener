@@ -217,7 +217,7 @@ export default function JDSetup({ onSave, initialJd }: JDSetupProps) {
     const removeMust = (s: string) => setJd(prev => ({ ...prev, mustHaveSkills: prev.mustHaveSkills.filter(x => x !== s) }));
     const removeNice = (s: string) => setJd(prev => ({ ...prev, niceToHave: prev.niceToHave.filter(x => x !== s) }));
 
-    const canPublish = jd.title.trim() && jd.mustHaveSkills.length > 0;
+    const canPublish = jd.title.trim().length > 0;
 
     const sectionCard: React.CSSProperties = {
         background: 'var(--bg-card)',

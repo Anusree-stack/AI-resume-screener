@@ -117,8 +117,8 @@ export default function App() {
         resetFilters();
         setCandidates(pool);
       }
-    }
-    if (dest === 'jd-setup') {
+    } else if (dest === 'jd-setup') {
+      // Only reset activeJd when creating a brand new JD (no jdItem passed)
       setActiveJd(null);
     }
     setScreen(dest);

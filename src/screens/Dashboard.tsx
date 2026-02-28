@@ -78,9 +78,17 @@ export default function Dashboard({
         setTimeout(() => setShortlistConfirmed(false), 3500);
     };
 
+    const BUCKET_TIER: Record<string, number> = { strong: 0, potential: 1, low: 2 };
+
     const candidatesWithGlobalRank = useMemo(() => {
         return [...candidates]
-            .sort((a, b) => b.compositeScore - a.compositeScore)
+            .sort((a, b) => {
+                const bktA = a.overriddenBucket ?? a.bucket;
+                const bktB = b.overriddenBucket ?? b.bucket;
+                const tierDiff = (BUCKET_TIER[bktA] ?? 3) - (BUCKET_TIER[bktB] ?? 3);
+                if (tierDiff !== 0) return tierDiff;
+                return b.compositeScore - a.compositeScore;
+            })
             .map((c, i) => ({ ...c, globalRank: i + 1 }));
     }, [candidates]);
 

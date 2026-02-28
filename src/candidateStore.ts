@@ -260,11 +260,11 @@ export function generateCandidatesForJD(jd: JobDescription, profileKey: string):
         const baseScore = Math.floor(rng() * 55) + 35;
         const finalScore = Math.max(10, Math.min(100, baseScore - violations.length * 9));
 
-        // Bucket assignment — strict gating
+        // Bucket assignment — purely score-based (>=80 strong, >=60 potential, else low)
         let bucket: Bucket = 'low';
-        if (violations.length === 0 && finalScore >= 80) {
+        if (finalScore >= 80) {
             bucket = 'strong';
-        } else if (finalScore >= 50) {
+        } else if (finalScore >= 60) {
             bucket = 'potential';
         }
 

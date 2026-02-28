@@ -65,7 +65,7 @@ export default function Home({ jds, onNavigate }: HomeProps) {
     const [stage, setStage] = useState<LifecycleStage | ''>('');
 
     const rolesInScreening = jds.filter(j => j.status === 'Screening in Progress').length;
-    const openRoles = jds.filter(j => ['Live – Accepting Applications', 'Screening in Progress', 'Interview'].includes(j.status)).length;
+    const openRoles = jds.filter(j => j.status === 'Live – Accepting Applications').length;
     const rolesClosed = jds.filter(j => j.status === 'Offer Closed').length;
 
     const metrics = [
@@ -267,7 +267,7 @@ export default function Home({ jds, onNavigate }: HomeProps) {
                                             {jd.applicationCount ?? '—'}
                                         </td>
                                         <td style={{ padding: '16px 12px', fontSize: 13, fontWeight: 700, color: 'var(--strong-text)', textAlign: 'center', fontFamily: 'Outfit, sans-serif' }}>
-                                            {jd.strongCount ?? '—'}
+                                            {jd.status === 'Live – Accepting Applications' || jd.applicationCount === 0 ? '—' : (jd.strongCount ?? '—')}
                                         </td>
                                         <td style={{ padding: '16px 12px', fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>
                                             {jd.daysOpen != null ? `${jd.daysOpen}d` : '—'}
