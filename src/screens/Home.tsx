@@ -67,10 +67,6 @@ export default function Home({ jds, onNavigate }: HomeProps) {
     const rolesInScreening = jds.filter(j => j.status === 'Screening in Progress').length;
     const openRoles = jds.filter(j => ['Live – Accepting Applications', 'Screening in Progress', 'Interview'].includes(j.status)).length;
     const rolesClosed = jds.filter(j => j.status === 'Offer Closed').length;
-    const screeningJds = jds.filter(j => j.status === 'Screening in Progress');
-    const avgTime = screeningJds.length
-        ? Math.round(screeningJds.reduce((a, j) => a + (j.daysOpen ?? 0), 0) / screeningJds.length)
-        : 0;
 
     const metrics = [
         {
@@ -225,20 +221,20 @@ export default function Home({ jds, onNavigate }: HomeProps) {
                             <thead>
                                 <tr style={{ background: 'var(--bg-card)' }}>
                                     {[
-                                        { label: 'Role', width: '25%' },
-                                        { label: 'Department', width: '15%' },
-                                        { label: 'Location', width: '15%' },
-                                        { label: 'Stage', width: '12%' },
-                                        { label: 'Apps', width: '8%', align: 'right' },
-                                        { label: 'Strong', width: '8%', align: 'right' },
-                                        { label: 'Days Open', width: '8%', align: 'right' },
-                                        { label: 'Next Action', width: '15%', align: 'right' }
-                                    ].map((col, i) => (
+                                        { label: 'Role', width: '22%' },
+                                        { label: 'Department', width: '13%' },
+                                        { label: 'Location', width: '13%' },
+                                        { label: 'Stage', width: '10%' },
+                                        { label: 'Apps', width: '10%', align: 'center' },
+                                        { label: 'Strong', width: '10%', align: 'center' },
+                                        { label: 'Days Open', width: '10%', align: 'center' },
+                                        { label: 'Next Action', width: '12%', align: 'right' }
+                                    ].map((col) => (
                                         <th key={col.label} style={{
-                                            padding: '14px 24px',
+                                            padding: '16px 24px',
                                             fontSize: 10.5, fontWeight: 700,
                                             color: 'var(--text-muted)',
-                                            textAlign: col.align === 'right' ? 'right' : 'left',
+                                            textAlign: col.align === 'center' ? 'center' : col.align === 'right' ? 'right' : 'left',
                                             textTransform: 'uppercase', letterSpacing: '0.08em',
                                             borderBottom: '1px solid var(--border-subtle)',
                                             width: col.width,
@@ -257,32 +253,32 @@ export default function Home({ jds, onNavigate }: HomeProps) {
                                         className="table-row"
                                         style={{ borderBottom: i < filtered.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}
                                     >
-                                        <td style={{ padding: '16px 24px' }}>
+                                        <td style={{ padding: '20px 24px' }}>
                                             <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>{jd.title}</div>
                                             <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
                                                 Experience: {jd.experienceMin}–{jd.experienceMax}y
                                             </div>
                                         </td>
-                                        <td style={{ padding: '16px 24px', fontSize: 13, color: 'var(--text-secondary)' }}>{jd.department}</td>
-                                        <td style={{ padding: '16px 24px', fontSize: 13, color: 'var(--text-secondary)' }}>{jd.location}</td>
-                                        <td style={{ padding: '16px 24px' }}>
+                                        <td style={{ padding: '20px 24px', fontSize: 13, color: 'var(--text-secondary)' }}>{jd.department}</td>
+                                        <td style={{ padding: '20px 24px', fontSize: 13, color: 'var(--text-secondary)' }}>{jd.location}</td>
+                                        <td style={{ padding: '20px 24px' }}>
                                             <span className={STAGE_BADGE_CLASS[jd.status]} style={{ fontSize: 10.5, padding: '3px 8px' }}>
                                                 {STAGE_DISPLAY[jd.status]}
                                             </span>
                                         </td>
-                                        <td style={{ padding: '16px 24px', fontSize: 13, fontWeight: 700, textAlign: 'right', fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+                                        <td style={{ padding: '20px 24px', fontSize: 13, fontWeight: 700, textAlign: 'center', fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
                                             {jd.applicationCount ?? '—'}
                                         </td>
-                                        <td style={{ padding: '16px 24px', fontSize: 13, fontWeight: 700, color: 'var(--strong-text)', textAlign: 'right', fontFamily: 'Outfit, sans-serif' }}>
+                                        <td style={{ padding: '20px 24px', fontSize: 13, fontWeight: 700, color: 'var(--strong-text)', textAlign: 'center', fontFamily: 'Outfit, sans-serif' }}>
                                             {jd.strongCount ?? '—'}
                                         </td>
-                                        <td style={{ padding: '16px 24px', fontSize: 13, color: 'var(--text-muted)', textAlign: 'right' }}>
+                                        <td style={{ padding: '20px 24px', fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>
                                             {jd.daysOpen != null ? `${jd.daysOpen}d` : '—'}
                                         </td>
-                                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                                        <td style={{ padding: '20px 24px', textAlign: 'right' }}>
                                             <button
                                                 className="btn-primary"
-                                                style={{ fontSize: 12, padding: '7px 16px', fontWeight: 600 }}
+                                                style={{ fontSize: 12.5, padding: '9px 18px', fontWeight: 700, minWidth: 110 }}
                                                 onClick={() => handleRowCTA(jd)}
                                                 id={`home-cta-${jd.id}`}
                                             >

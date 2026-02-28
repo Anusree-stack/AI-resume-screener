@@ -140,6 +140,7 @@ export const generateMockCandidates = (count: number, jd: JobDescription): Candi
         const seniorities = ['Entry', 'Mid', 'Senior', 'Lead', 'Director'];
         const domains = ['Fintech', 'SaaS', 'Healthcare', 'E-commerce', 'EdTech'];
         const educations = ['Bachelors', 'Masters', 'PhD'];
+        const institutions = ['IIT Delhi', 'BITS Pilani', 'NIT Surathkal', 'Delhi University', 'VIT Vellore', 'Stanford University', 'MIT', 'SRM University'];
 
         candidates.push({
             id: `gen-${i}`,
@@ -153,6 +154,7 @@ export const generateMockCandidates = (count: number, jd: JobDescription): Candi
             seniority: seniorities[Math.floor(Math.random() * seniorities.length)],
             domain: domains[Math.floor(Math.random() * domains.length)],
             education: educations[Math.floor(Math.random() * educations.length)],
+            educationInstitution: institutions[Math.floor(Math.random() * institutions.length)],
             isReferral: Math.random() < 0.15,
             experienceHistory: [
                 {
@@ -172,13 +174,13 @@ export const generateMockCandidates = (count: number, jd: JobDescription): Candi
             compositeScore: finalScore,
             bucket,
             dimensions: [
-                { label: 'Skill Alignment', score: Math.floor(finalScore * 0.4), max: 40, reasoning: 'Simulated based on JD alignment.' },
-                { label: 'Relevant Experience', score: Math.floor(finalScore * 0.3), max: 30, reasoning: 'Simulated years of experience check.' },
-                { label: 'Role Context', score: Math.floor(finalScore * 0.15), max: 15, reasoning: 'Simulated context match.' },
-                { label: 'Career Trajectory', score: Math.floor(finalScore * 0.15), max: 15, reasoning: 'Simulated career growth.' },
+                { label: 'Skill Alignment', score: Math.floor(finalScore * 0.4), max: 40, reasoning: finalScore > 70 ? 'Strong overlap with core stack. High proficiency in React and Node.js observed.' : 'Partial alignment with the core stack. Missing deep expertise in PostgreSQL or TypeScript.' },
+                { label: 'Relevant Experience', score: Math.floor(finalScore * 0.3), max: 30, reasoning: `Candidate has ${yoe} years of total experience across startups and mid-market firms.` },
+                { label: 'Role Context', score: Math.floor(finalScore * 0.15), max: 15, reasoning: 'Context match is solid — has worked in parallel industries with similar scale.' },
+                { label: 'Career Trajectory', score: Math.floor(finalScore * 0.15), max: 15, reasoning: 'Consistent growth pattern and steady transition across relevant engineering roles.' },
             ],
             mustHaveViolations: violations,
-            summary: `Programmatically generated candidate for load testing. Composite score: ${finalScore}.`,
+            summary: `${name} shows ${finalScore >= 80 ? 'exceptional' : finalScore >= 50 ? 'significant' : 'limited'} alignment for this position. Their experience at ${yoe} years provides a ${yoe >= jd.experienceMin ? 'solid' : 'developing'} foundation. Core skill coverage is ${matchedSkills.length}/${mustHaves.length}.`,
             isShortlisted: false,
             isUnderHMReview: false,
             resumeFileName: 'mock_resume.pdf'
@@ -198,7 +200,8 @@ export const mockCandidates: Candidate[] = [
         currentCompany: 'Razorpay',
         yearsOfExperience: 6,
         location: 'Bangalore',
-        education: 'B.Tech CS · IIT Bombay · 2019',
+        education: 'B.Tech CS',
+        educationInstitution: 'IIT Bombay',
         skills: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'GraphQL', 'AWS'],
         compositeScore: 91,
         bucket: 'strong',
@@ -227,7 +230,8 @@ export const mockCandidates: Candidate[] = [
         currentCompany: 'CRED',
         yearsOfExperience: 4,
         location: 'Bangalore',
-        education: 'B.E. CS · BITS Pilani · 2021',
+        education: 'B.E. CS',
+        educationInstitution: 'BITS Pilani',
         skills: ['React', 'Node.js', 'TypeScript', 'MongoDB', 'Redis'],
         compositeScore: 78,
         bucket: 'potential',
@@ -256,7 +260,8 @@ export const mockCandidates: Candidate[] = [
         currentCompany: 'PhonePe',
         yearsOfExperience: 5,
         location: 'Hyderabad',
-        education: 'B.Tech ECE · NIT Trichy · 2020',
+        education: 'B.Tech ECE',
+        educationInstitution: 'NIT Trichy',
         skills: ['React', 'TypeScript', 'CSS', 'Webpack', 'GraphQL'],
         compositeScore: 54,
         bucket: 'potential',
@@ -284,7 +289,8 @@ export const mockCandidates: Candidate[] = [
         currentCompany: 'StartupXYZ',
         yearsOfExperience: 2,
         location: 'Delhi',
-        education: 'B.Sc CS · Delhi University · 2023',
+        education: 'B.Sc CS',
+        educationInstitution: 'Delhi University',
         skills: ['JavaScript', 'React', 'HTML', 'CSS'],
         compositeScore: 31,
         bucket: 'low',

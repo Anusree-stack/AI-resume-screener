@@ -1,6 +1,6 @@
 // src/screens/Dashboard.tsx
 import { useState, useMemo } from 'react';
-import { Star, ArrowLeft, Search, X, LayoutList, Columns2, ArrowRight, CheckSquare } from 'lucide-react';
+import { Star, ArrowLeft, Search, X, LayoutList, Columns2, ArrowRight, CheckSquare, FileText } from 'lucide-react';
 import type { Candidate, Bucket } from '../types';
 import VirtualBucket from '../components/VirtualBucket';
 
@@ -32,6 +32,7 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [showShortlistModal, setShowShortlistModal] = useState(false);
     const [shortlistConfirmed, setShortlistConfirmed] = useState(false);
+    const [isJDOpen, setIsJDOpen] = useState(false);
 
     const toggleShortlist = (id: string) => {
         onUpdateCandidates(candidates.map(c => c.id === id ? { ...c, isShortlisted: !c.isShortlisted } : c));
@@ -131,6 +132,15 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: 10 }}>
+                        <button
+                            className="btn-secondary"
+                            onClick={() => setIsJDOpen(true)}
+                            style={{ fontSize: 13, padding: '8px 16px', borderColor: 'var(--accent-purple)', color: 'var(--accent-purple)' }}
+                            id="view-jd-btn"
+                        >
+                            <FileText size={14} /> View JD Reference
+                        </button>
+
                         {shortlistConfirmed && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: 'var(--strong-text)', fontWeight: 600, padding: '6px 14px', background: 'var(--strong-bg)', border: '1px solid var(--strong-border)', borderRadius: 8 }}>
                                 ✓ Candidates shortlisted
@@ -237,7 +247,7 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                     <div className="card" style={{ overflow: 'hidden' }}>
                         <div style={{
                             display: 'grid',
-                            gridTemplateColumns: '40px 50px 70px 1.5fr 1fr 100px 100px 100px',
+                            gridTemplateColumns: '40px 70px 50px 1.5fr 1fr 100px 100px 100px',
                             alignItems: 'center', padding: '12px 24px',
                             background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-subtle)',
                         }}>
@@ -248,8 +258,8 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                                     style={{ cursor: 'pointer', accentColor: 'var(--accent-purple)' }}
                                 />
                             </div>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Rank</div>
                             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Score</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Rank</div>
                             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Candidate</div>
                             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Bucket</div>
                             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Exp</div>
@@ -267,7 +277,7 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                                         key={c.id}
                                         className="table-row"
                                         style={{
-                                            display: 'grid', gridTemplateColumns: '40px 50px 70px 1.5fr 1fr 100px 100px 100px',
+                                            display: 'grid', gridTemplateColumns: '40px 70px 50px 1.5fr 1fr 100px 100px 100px',
                                             alignItems: 'center', padding: '14px 24px',
                                             borderBottom: i < filteredCandidates.length - 1 ? '1px solid var(--border-subtle)' : 'none',
                                             background: isSelected ? 'hsla(262,72%,52%,0.03)' : undefined,
@@ -279,12 +289,12 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                                         <div onClick={e => { e.stopPropagation(); toggleSelect(c.id); }}>
                                             <input type="checkbox" checked={isSelected} readOnly style={{ cursor: 'pointer', accentColor: 'var(--accent-purple)' }} />
                                         </div>
-                                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>#{i + 1}</div>
                                         <div>
                                             <div style={{ fontSize: 14, fontWeight: 800, fontFamily: 'Outfit, sans-serif', color: activeBucket === 'strong' ? 'var(--strong-text)' : activeBucket === 'potential' ? 'var(--potential-text)' : 'var(--text-secondary)' }}>
                                                 {c.compositeScore}%
                                             </div>
                                         </div>
+                                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>#{i + 1}</div>
                                         <div style={{ minWidth: 0 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
                                                 <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{c.name}</span>
@@ -434,6 +444,52 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                             <button className="btn-secondary" style={{ flex: 1, fontSize: 14 }} onClick={() => setShowShortlistModal(false)} id="cancel-shortlist-btn">
                                 Cancel
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* JD Reference Side Panel */}
+            {isJDOpen && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', justifyContent: 'flex-end' }}>
+                    <div onClick={() => setIsJDOpen(false)} style={{ position: 'absolute', inset: 0, background: 'hsla(220,30%,10%,0.4)', backdropFilter: 'blur(2px)' }} />
+                    <div className="screen-fade" style={{
+                        position: 'relative', width: 480, height: '100%', background: 'var(--bg-card)',
+                        borderLeft: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column',
+                        boxShadow: 'var(--shadow-lg)'
+                    }}>
+                        <div style={{ padding: '24px 32px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div>
+                                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Reference Material</div>
+                                <h3 style={{ fontSize: 16, fontWeight: 700 }}>Job Description</h3>
+                            </div>
+                            <button onClick={() => setIsJDOpen(false)} style={{ background: 'var(--bg-secondary)', border: 'none', padding: 8, borderRadius: 8, cursor: 'pointer', color: 'var(--text-muted)' }}>
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
+                            <div style={{ marginBottom: 24 }}>
+                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Role Summary</h4>
+                                <p style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6 }}>{roleName || 'Senior Full-Stack Engineer'}</p>
+                            </div>
+
+                            <div style={{ marginBottom: 24 }}>
+                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Requirements</h4>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                    {['React', 'Node.js', 'TypeScript', 'PostgreSQL'].map(s => (
+                                        <span key={s} style={{ padding: '4px 10px', borderRadius: 6, background: 'var(--accent-purple-dim)', color: 'var(--accent-purple)', fontSize: 12, fontWeight: 600 }}>{s}</span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div style={{ marginBottom: 24 }}>
+                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Description</h4>
+                                <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+                                    We're looking for a Senior Full-Stack Engineer to join our product team. You'll work on mission-critical features, lead technical architecture decisions, and mentor junior engineers.
+                                    {"\n\n"}
+                                    You'll be embedded in a cross-functional team and collaborate closely with Product, Design, and Data.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>

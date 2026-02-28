@@ -18,6 +18,7 @@ interface Stage {
 export default function Processing({ fileCount, onComplete }: ProcessingProps) {
     const [currentStage, setCurrentStage] = useState(0);
     const [stageProgress, setStageProgress] = useState(0);
+    const [overallProgress, setOverallProgress] = useState(0);
     const [done, setDone] = useState(false);
     const [processedCount, setProcessedCount] = useState(0);
 
@@ -52,12 +53,11 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
         },
     ];
 
-    const totalDuration = stages.reduce((s, st) => s + st.duration, 0);
-
     useEffect(() => {
         let raf: number;
         let elapsed = 0;
         let start: number | null = null;
+        const total = stages.reduce((s, st) => s + st.duration, 0);
 
         const stageDurations = stages.map(s => s.duration);
         const stageCumulative = stageDurations.reduce<number[]>((acc, d, i) => {
@@ -68,10 +68,13 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
         const animate = (timestamp: number) => {
             if (!start) start = timestamp;
             elapsed = timestamp - start;
-            const total = totalDuration;
             const clampedElapsed = Math.min(elapsed, total);
 
-            // Determine current stage
+            // Overall
+            const op = (clampedElapsed / total) * 100;
+            setOverallProgress(op);
+
+            // Current stage
             let stageIdx = 0;
             for (let i = 0; i < stageCumulative.length; i++) {
                 if (clampedElapsed >= stageCumulative[i]) stageIdx = i + 1;
@@ -85,27 +88,20 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
             setStageProgress(Math.min(thisProgress * 100, 100));
 
             // Processed count
-            const overallProgress = clampedElapsed / total;
-            setProcessedCount(Math.floor(overallProgress * fileCount));
+            setProcessedCount(Math.floor((clampedElapsed / total) * fileCount));
 
             if (elapsed < total) {
                 raf = requestAnimationFrame(animate);
             } else {
                 setProcessedCount(fileCount);
                 setDone(true);
-                setTimeout(onComplete, 900);
+                setTimeout(onComplete, 1200);
             }
         };
 
         raf = requestAnimationFrame(animate);
         return () => cancelAnimationFrame(raf);
-    }, []);
-
-    const overallProgress = Math.min(
-        stages.slice(0, currentStage).reduce((s, st) => s + st.duration, 0) +
-        (stageProgress / 100) * stages[currentStage]?.duration,
-        totalDuration
-    ) / totalDuration * 100;
+    }, [fileCount, onComplete]);
 
     return (
         <div style={{

@@ -27,6 +27,7 @@ export interface Candidate {
     yearsOfExperience: number;
     location: string;
     education: string;
+    educationInstitution: string;
     skills: string[];
 
     compositeScore: number;   // 0–100

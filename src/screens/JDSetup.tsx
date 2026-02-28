@@ -149,8 +149,15 @@ function SkillTag({ label, onRemove, variant }: { label: string; onRemove: () =>
 
 export default function JDSetup({ onSave, initialJd }: JDSetupProps) {
     const [jd, setJd] = useState<JobDescription>(initialJd || {
-        ...mockJD,
         id: `jd-${Date.now()}`,
+        title: '',
+        department: 'Engineering',
+        location: 'Remote',
+        experienceMin: 2,
+        experienceMax: 5,
+        description: '',
+        mustHaveSkills: [],
+        niceToHave: [],
         status: 'Draft' as const,
         createdAt: new Date().toISOString(),
     });
@@ -168,19 +175,22 @@ export default function JDSetup({ onSave, initialJd }: JDSetupProps) {
 
             // Heuristic for Demo: first 60% are must-have, rest nice-to-have
             const mid = Math.ceil(found.length * 0.6);
-            const mustHave = found.slice(0, mid);
-            const nice = found.slice(mid);
+            let mustHave = found.slice(0, mid);
+            let nice = found.slice(mid);
 
             // Default fallback if nothing found but description exists
-            const fallbackMust = found.length === 0 ? ['Communication', 'Team Leadership'] : mustHave;
+            if (found.length === 0) {
+                mustHave = ['React', 'Node.js', 'TypeScript', 'PostgreSQL'];
+                nice = ['GraphQL', 'AWS', 'Docker'];
+            }
 
             setJd(prev => ({
                 ...prev,
-                mustHaveSkills: Array.from(new Set([...prev.mustHaveSkills, ...fallbackMust])),
+                mustHaveSkills: Array.from(new Set([...prev.mustHaveSkills, ...mustHave])),
                 niceToHave: Array.from(new Set([...prev.niceToHave, ...nice])),
             }));
             setExtracting(false);
-        }, 1200);
+        }, 1500);
     };
 
     const addMust = (skill: string) => {
