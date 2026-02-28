@@ -447,17 +447,22 @@ export default function Dashboard({
                 )}
             </div>
 
-            {/* Bulk Action Bar — fixed to bottom of viewport */}
+            {/* Bulk Action Bar — floating pill, always visible */}
             {selectedIds.size > 0 && (
                 <div style={{
-                    position: 'fixed', bottom: 0, left: 0, right: 0,
+                    position: 'fixed',
+                    bottom: 28,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
                     background: 'var(--bg-card)',
-                    borderTop: '2px solid var(--accent-purple)',
-                    padding: '12px 40px',
+                    border: '1px solid var(--accent-purple)',
+                    borderRadius: 14,
+                    padding: '12px 24px',
                     display: 'flex', alignItems: 'center', gap: 18,
-                    boxShadow: '0 -4px 24px hsla(262,72%,52%,0.12)',
+                    boxShadow: '0 8px 32px hsla(262,72%,52%,0.2), 0 2px 8px hsla(0,0%,0%,0.15)',
                     zIndex: 200,
-                    backdropFilter: 'blur(12px)',
+                    backdropFilter: 'blur(16px)',
+                    whiteSpace: 'nowrap',
                 }}>
                     <Star size={15} color="var(--accent-amber)" fill="var(--accent-amber)" />
                     <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
