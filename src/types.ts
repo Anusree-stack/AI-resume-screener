@@ -45,6 +45,8 @@ export interface Candidate {
     isReferral?: boolean;
     seniority?: string;
     domain?: string;
+    mustHaveSkills?: string[];
+    globalRank?: number;
     resumeFileName: string;
     experienceHistory?: ExperienceItem[];
 }

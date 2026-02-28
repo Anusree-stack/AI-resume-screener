@@ -1,7 +1,7 @@
 // src/App.tsx
 import { useState } from 'react';
 import './index.css';
-import type { AppScreen, Candidate, JobDescription } from './types';
+import type { AppScreen, Candidate, JobDescription, Bucket } from './types';
 import { jdLibrary, generateMockCandidates, mockCandidates } from './mockData';
 import TopNav from './components/TopNav';
 import Home from './screens/Home';
@@ -19,6 +19,17 @@ export default function App() {
   const [candidates, setCandidates] = useState<Candidate[]>(mockCandidates);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
 
+  // Dashboard Filters Persistence
+  const [dashboardSearch, setDashboardSearch] = useState('');
+  const [dashboardBucketFilter, setDashboardBucketFilter] = useState<Bucket | ''>('');
+  const [dashboardMinScore, setDashboardMinScore] = useState(0);
+  const [dashboardMinExp, setDashboardMinExp] = useState(0);
+  const [dashboardSeniority, setDashboardSeniority] = useState('');
+  const [dashboardDomain, setDashboardDomain] = useState('');
+  const [dashboardEdu, setDashboardEdu] = useState('');
+  const [dashboardReferralOnly, setDashboardReferralOnly] = useState(false);
+  const [dashboardView, setDashboardView] = useState<'list' | 'bucket'>('list');
+
   const handleJDSave = (savedJd: JobDescription, action: 'draft' | 'publish' | 'upload') => {
     setJd(savedJd);
     if (action === 'upload') {
@@ -30,11 +41,9 @@ export default function App() {
 
   const handleCVUploadNext = (files: File[]) => {
     setUploadedFileCount(files.length);
-    if (files.length > 50) {
-      setCandidates(generateMockCandidates(files.length, jd || mockCandidates[0] as unknown as JobDescription));
-    } else {
-      setCandidates(mockCandidates);
-    }
+    // Use currently active JD or fallback to first one in library
+    const activeJd = jd || jdLibrary[0];
+    setCandidates(generateMockCandidates(files.length, activeJd));
     setScreen('processing');
   };
 
@@ -95,6 +104,15 @@ export default function App() {
           onProceedToShortlist={() => setScreen('shortlist')}
           onBack={() => setScreen('home')}
           roleName={jd?.title}
+          search={dashboardSearch} setSearch={setDashboardSearch}
+          bucketFilter={dashboardBucketFilter} setBucketFilter={setDashboardBucketFilter}
+          minScore={dashboardMinScore} setMinScore={setDashboardMinScore}
+          minExp={dashboardMinExp} setMinExp={setDashboardMinExp}
+          seniority={dashboardSeniority} setSeniority={setDashboardSeniority}
+          domain={dashboardDomain} setDomain={setDashboardDomain}
+          edu={dashboardEdu} setEdu={setDashboardEdu}
+          referralOnly={dashboardReferralOnly} setReferralOnly={setDashboardReferralOnly}
+          view={dashboardView} setView={setDashboardView}
         />
       )}
 

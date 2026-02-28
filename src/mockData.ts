@@ -111,7 +111,7 @@ export const jdLibrary: JobDescription[] = [
 
 const FIRST_NAMES = [
     'Aarav', 'Aditi', 'Akash', 'Amrita', 'Ananya', 'Arjun', 'Arnav', 'Avni',
-    'Chirag', 'Deepika', 'Dev', 'Divya', 'Gaurav', 'Ishaan', 'Kavya', 'Kiran',
+    'Chirag', 'Deepika', 'Dev', 'Divya', 'Gaurav', 'Ishaan', 'Karthik', 'Kavya', 'Kiran',
     'Manish', 'Megha', 'Mihir', 'Nandini', 'Nikhil', 'Pallavi', 'Pranav', 'Priya',
     'Rahul', 'Rajeev', 'Riya', 'Rohan', 'Sakshi', 'Sanya', 'Shweta', 'Siddharth',
     'Sneha', 'Suresh', 'Tanvi', 'Tushar', 'Uday', 'Varun', 'Vikram', 'Yash',
@@ -201,44 +201,44 @@ const TECH_STACKS = [
 function skillAlignmentReasoning(score: number, max: number, matchedCount: number, totalRequired: number, company: string): string {
     const pct = Math.round((score / max) * 100);
     if (pct >= 85) {
-        return `Demonstrates strong coverage of all ${totalRequired} required skills, with direct production experience evidenced across current and prior roles at ${company} and earlier positions. Skill recency modifier is high — primary technologies appear in the most recent role, indicating active use rather than dated familiarity. Semantic alignment with the JD is very high across both must-haves and nice-to-haves.`;
+        return `Exceptional coverage of all ${totalRequired} required skills with deep production experience at ${company}. Skill recency is excellent, indicating active use of the primary tech stack. Semantic match with JD requirements is near-perfect, showing both breadth and specialized depth.`;
     } else if (pct >= 60) {
-        return `Covers ${matchedCount} of ${totalRequired} must-have skills. Missing skills are present in adjacent technologies, suggesting moderate adaptability. Recency modifier is partial — some flagged skills appeared only in older roles, indicating potential rust. Overall semantic similarity with the JD is moderate; cultural and domain context aligns well but technical depth is not fully evidenced.`;
+        return `Covers ${matchedCount} of ${totalRequired} mandatory skills. Missing criteria are partially offset by adjacent technology experience. Recency is moderate; some skills haven't been utilized in the most recent role. Overall technical alignment is solid but requires minor upskilling.`;
     } else {
-        return `Only ${matchedCount} of ${totalRequired} required skills are confirmed from the candidate's profile. Skill recency is low — required technologies are either absent or appear only in peripheral capacities. The semantic gap between the candidate's demonstrated stack and the JD requirements is significant, suggesting meaningful ramp-up time would be needed if hired.`;
+        return `Significant skill gap detected; only ${matchedCount} of ${totalRequired} required skills are evidenced. Recency modifier is low, suggesting dated familiarity with the core stack. Technical alignment is below the threshold for immediate productivity in this specific role.`;
     }
 }
 
 function experienceAlignmentReasoning(score: number, max: number, yoe: number, minRequired: number, company: string): string {
     const pct = Math.round((score / max) * 100);
     if (pct >= 85) {
-        return `${yoe} years of total experience, with the majority spent in domain-aligned roles. Seniority level matches the JD expectation — has held senior or equivalent titles for at least 2 years. Job stability is strong with no tenures below 18 months. Work at ${company} and prior companies reflects increasing ownership of complex engineering problems with measurable business impact.`;
+        return `Strong ${yoe}-year history with consistent domain advancement. Seniority level perfectly matches JD expectations, with clear evidence of ownership at ${company}. Stability signal is high, showing consistent tenure and increasing responsibility across all prior engineering positions.`;
     } else if (pct >= 60) {
-        return `${yoe} years of experience, of which approximately ${Math.round(yoe * 0.65)} are domain-aligned. Meets the minimum threshold of ${minRequired} years but falls short of the upper end of the range. Seniority alignment is partial — has performed senior-level tasks without formal title elevation. One short tenure noted in history which applies a minor stability penalty.`;
+        return `Meets the ${minRequired}-year threshold with ${yoe} years of total experience. Seniority alignment is good, though depth in specific domain verticals is slightly thinner than ideal. Stability is acceptable, hampered only by one relatively short tenure early in the career.`;
     } else {
-        return `${yoe} years of experience, which is ${yoe < minRequired ? `below the ${minRequired}-year minimum threshold, making this candidate ineligible for the Strong Match bucket` : 'at the lower boundary of the acceptable range'}. Domain-aligned tenure is limited — much of the experience is in adjacent or unrelated sectors. Stability signal is mixed, with shorter average tenures indicating either early-career volatility or exploratory transitions.`;
+        return `${yoe} years of experience falls ${yoe < minRequired ? 'below the mandatory minimum' : 'short of the ideal range'}. Domain-aligned tenure is limited, and seniority level is slightly junior for the role context. Stability signals are mixed due to frequent role transitions.`;
     }
 }
 
 function roleContextReasoning(score: number, max: number, company: string): string {
     const pct = Math.round((score / max) * 100);
     if (pct >= 80) {
-        return `Strong ownership signals detected across role descriptions — language such as "led", "architected", "owned", and "drove" appear in multiple positions, indicating senior individual contributor behavior. Scale indicators are present: mentions of user base in the millions, revenue-critical systems, and real-time processing. Responsibility classification: Senior IC with indirect team influence at ${company}.`;
+        return `Clear ownership signals detected; architected revenue-critical systems at ${company}. Scale indicators are strong, including mentions of high-traffic user bases and system-level impact. Responsibilities align with a high-bandwidth senior individual contributor managing significant technical complexity.`;
     } else if (pct >= 55) {
-        return `Moderate ownership signals. Candidate demonstrates initiative in some roles but lacks explicit scale indicators in their most recent position at ${company}. Responsibility level appears to be mid-level IC with some cross-team touchpoints. Language used in role descriptions is collaborative rather than directional, suggesting contributor rather than ownership mindset at this stage.`;
+        return `Moderate ownership signals with evidence of lead-level contributions in collaborative settings. Scale of systems handled is respectable but lacks the massive throughput required for top-tier scores. Role context shows a steady progression toward autonomous project ownership.`;
     } else {
-        return `Limited scope and scale signals in role descriptions. Work at ${company} and prior positions reflects execution of well-scoped tasks with limited ambiguity or strategic ownership. No clear mentions of system-level impact, large-scale user bases, or architecture decision-making. Responsibility classification is junior to mid IC — aligns with roles requiring close guidance rather than autonomous delivery.`;
+        return `Limited evidence of broad ownership or system-scale complexity. Work reflects execution of well-scoped tasks under close guidance. Scope of impact is primarily feature-level rather than architecture-level, suggesting a more junior responsibility profile relative to JD needs.`;
     }
 }
 
 function trajectoryReasoning(score: number, max: number, yoe: number, company: string): string {
     const pct = Math.round((score / max) * 100);
     if (pct >= 80) {
-        return `Career trajectory is consistently upward across ${yoe} years, with clear domain progression. Title elevation has followed at expected velocity for the industry — approximately one promotion every 2–3 years, indicating strong performance recognition. Scope of responsibility has expanded meaningfully across each role. Directional consistency is high: ${company} and earlier positions all point toward a coherent full-stack engineering career with no lateral drift.`;
+        return `Excellent career trajectory over ${yoe} years with rapid title progression. Consistent domain focus and increasing scope indicate high performance recognition. Directional consistency is perfect, with each role at ${company} and earlier showing logical career growth.`;
     } else if (pct >= 55) {
-        return `Moderate trajectory signal across ${yoe} years. Some title progression detected, though not at a velocity that suggests above-average performance recognition relative to peers. Scope has grown, but evidence is primarily task-level rather than system-level. Domain direction is mostly consistent — ${company} role aligns with prior positions — however, one unrelated industry stint introduces mild directionality noise. Trajectory is healthy but not exceptional.`;
+        return `Healthy career trajectory with steady advancement. Title progression is industry-standard for a ${yoe}-year career. Some lateral domain shifts introduce minor noise, but overall growth remains positive toward senior-level contributions and ownership.`;
     } else {
-        return `Trajectory signal is below expectations for the target seniority. With ${yoe} years of experience, title progression has been slow relative to industry peers — the current title at ${company} does not reflect the full-stack ownership typically seen at this tenure stage. Domain consistency is variable, with some lateral moves into unrelated sectors. Increasing responsibility over time is not clearly demonstrated through role descriptions or company scale.`;
+        return `Trajectory signals are below expectations for this tenure. Title progression has been slower than peer averages, and domain consistency is variable. Responsibility growth isn't clearly demonstrated across different company stages or role history.`;
     }
 }
 
@@ -269,9 +269,16 @@ export const generateMockCandidates = (count: number, jd: JobDescription): Candi
 
         const baseScore = Math.floor(Math.random() * 55) + 35;
         const finalScore = Math.max(10, Math.min(100, baseScore - (violations.length * 9)));
+
         let bucket: Bucket = 'low';
-        if (finalScore >= 80 && violations.length === 0) bucket = 'strong';
-        else if (finalScore >= 50) bucket = 'potential';
+        // STRICT GATING: Gating failures strictly prevent "Strong Match"
+        if (violations.length === 0 && finalScore >= 80) {
+            bucket = 'strong';
+        } else if (finalScore >= 50) {
+            bucket = 'potential';
+        } else {
+            bucket = 'low';
+        }
 
         const institution = INSTITUTIONS[Math.floor(Math.random() * INSTITUTIONS.length)];
         const education = EDUCATION_LEVELS[Math.floor(Math.random() * EDUCATION_LEVELS.length)];
@@ -351,8 +358,9 @@ export const generateMockCandidates = (count: number, jd: JobDescription): Candi
                     reasoning: trajectoryReasoning(trajectoryScore, 15, yoe, company),
                 },
             ],
+            mustHaveSkills: mustHaves,
             mustHaveViolations: violations,
-            summary: `${name} shows ${finalScore >= 80 ? 'strong' : finalScore >= 50 ? 'moderate' : 'limited'} alignment with this role. ${yoe} years of experience, currently ${currentRole} at ${company}. Matched ${matchedSkills.length}/${mustHaves.length} must-have skills.${violations.length > 0 ? ` Key gaps: ${violations.slice(0, 2).join(', ')}.` : ' No critical must-have violations identified.'}`,
+            summary: `${name} shows ${finalScore >= 80 ? 'strong' : finalScore >= 50 ? 'moderate' : 'limited'} alignment for ${jd.title}. ${yoe}y of experience, currently ${currentRole} at ${company}. Matched ${matchedSkills.length}/${mustHaves.length} core skills.${violations.length > 0 ? ` Note: ${violations[0]} gap identified.` : ' No gating violations identified.'}`,
             isShortlisted: false,
             isUnderHMReview: false,
             resumeFileName: `${fname.toLowerCase()}_${lname.toLowerCase()}_resume.pdf`,

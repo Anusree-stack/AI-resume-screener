@@ -11,6 +11,17 @@ interface DashboardProps {
     onProceedToShortlist: () => void;
     onBack: () => void;
     roleName?: string;
+
+    // Filters Persistence
+    search: string; setSearch: (v: string) => void;
+    bucketFilter: Bucket | ''; setBucketFilter: (v: Bucket | '') => void;
+    minScore: number; setMinScore: (v: number) => void;
+    minExp: number; setMinExp: (v: number) => void;
+    seniority: string; setSeniority: (v: string) => void;
+    domain: string; setDomain: (v: string) => void;
+    edu: string; setEdu: (v: string) => void;
+    referralOnly: boolean; setReferralOnly: (v: boolean) => void;
+    view: 'list' | 'bucket'; setView: (v: 'list' | 'bucket') => void;
 }
 
 const BUCKET_CONFIG = {
@@ -19,16 +30,11 @@ const BUCKET_CONFIG = {
     low: { label: 'Limited Alignment', sublabel: 'Score < 50', color: 'var(--low-text)', bg: 'var(--low-bg)', border: 'var(--low-border)', badgeClass: 'badge-low' },
 };
 
-export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandidates, onProceedToShortlist, onBack, roleName }: DashboardProps) {
-    const [search, setSearch] = useState('');
-    const [bucketFilter, setBucketFilter] = useState<Bucket | ''>('');
-    const [minScore, setMinScore] = useState(0);
-    const [minExp, setMinExp] = useState(0);
-    const [seniority, setSeniority] = useState('');
-    const [domain, setDomain] = useState('');
-    const [edu, setEdu] = useState('');
-    const [referralOnly, setReferralOnly] = useState(false);
-    const [view, setView] = useState<'list' | 'bucket'>('list');
+export default function Dashboard({
+    candidates, onSelectCandidate, onUpdateCandidates, onProceedToShortlist, onBack, roleName,
+    search, setSearch, bucketFilter, setBucketFilter, minScore, setMinScore, minExp, setMinExp,
+    seniority, setSeniority, domain, setDomain, edu, setEdu, referralOnly, setReferralOnly, view, setView
+}: DashboardProps) {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [showShortlistModal, setShowShortlistModal] = useState(false);
     const [shortlistConfirmed, setShortlistConfirmed] = useState(false);
@@ -69,8 +75,14 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
         setTimeout(() => setShortlistConfirmed(false), 3500);
     };
 
+    const candidatesWithGlobalRank = useMemo(() => {
+        return [...candidates]
+            .sort((a, b) => b.compositeScore - a.compositeScore)
+            .map((c, i) => ({ ...c, globalRank: i + 1 }));
+    }, [candidates]);
+
     const filteredCandidates = useMemo(() =>
-        candidates
+        candidatesWithGlobalRank
             .filter(c => {
                 const matchSearch = !search.trim() || c.name.toLowerCase().includes(search.toLowerCase()) || c.currentRole.toLowerCase().includes(search.toLowerCase()) || c.skills.some(s => s.toLowerCase().includes(search.toLowerCase()));
                 const matchScore = c.compositeScore >= minScore;
@@ -78,12 +90,17 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                 const matchBucket = !bucketFilter || (c.overriddenBucket ?? c.bucket) === bucketFilter;
                 const matchSeniority = !seniority || c.seniority === seniority;
                 const matchDomain = !domain || c.domain === domain;
-                const matchEdu = !edu || c.education === edu;
+                const getEduLevel = (str: string) => {
+                    if (str.startsWith('B')) return 'Bachelors';
+                    if (str.startsWith('M') || str.startsWith('MBA')) return 'Masters';
+                    if (str.startsWith('P')) return 'PhD';
+                    return '';
+                };
+                const matchEdu = !edu || getEduLevel(c.education) === edu;
                 const matchReferral = !referralOnly || c.isReferral;
                 return matchSearch && matchScore && matchExp && matchBucket && matchSeniority && matchDomain && matchEdu && matchReferral;
-            })
-            .sort((a, b) => b.compositeScore - a.compositeScore),
-        [candidates, search, minScore, minExp, bucketFilter, seniority, domain, edu, referralOnly]
+            }),
+        [candidatesWithGlobalRank, search, minScore, minExp, bucketFilter, seniority, domain, edu, referralOnly]
     );
 
     const getBucketCandidates = (bucket: Bucket) => filteredCandidates.filter(c => (c.overriddenBucket ?? c.bucket) === bucket);
@@ -294,7 +311,7 @@ export default function Dashboard({ candidates, onSelectCandidate, onUpdateCandi
                                                 {c.compositeScore}%
                                             </div>
                                         </div>
-                                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>#{i + 1}</div>
+                                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>#{c.globalRank}</div>
                                         <div style={{ minWidth: 0 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
                                                 <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{c.name}</span>

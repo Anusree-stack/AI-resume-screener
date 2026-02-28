@@ -210,31 +210,28 @@ export default function Home({ jds, onNavigate }: HomeProps) {
                         <select value={stage} onChange={e => setStage(e.target.value as LifecycleStage | '')} style={{ ...selectStyle, minWidth: 130 }} id="home-stage-filter">
                             {ALL_STAGES.map(s => <option key={s} value={s}>{STAGE_FILTER_LABELS[s]}</option>)}
                         </select>
-                        <div style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>
-                            {filtered.length} active roles
-                        </div>
                     </div>
 
                     {/* Table */}
                     <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                             <thead>
                                 <tr style={{ background: 'var(--bg-card)' }}>
                                     {[
-                                        { label: 'Role', width: '22%' },
-                                        { label: 'Department', width: '13%' },
-                                        { label: 'Location', width: '13%' },
-                                        { label: 'Stage', width: '10%' },
-                                        { label: 'Apps', width: '10%', align: 'center' },
-                                        { label: 'Strong', width: '10%', align: 'center' },
-                                        { label: 'Days Open', width: '10%', align: 'center' },
-                                        { label: 'Next Action', width: '12%', align: 'right' }
+                                        { label: 'Role', width: '20%' },
+                                        { label: 'Department', width: '12%' },
+                                        { label: 'Location', width: '11%' },
+                                        { label: 'Stage', width: '16%' },
+                                        { label: 'Applications', width: '8%', align: 'center' },
+                                        { label: 'Strong', width: '7%', align: 'center' },
+                                        { label: 'Days Open', width: '7%', align: 'center' },
+                                        { label: 'Next Action', width: '19%', align: 'center' }
                                     ].map((col) => (
                                         <th key={col.label} style={{
-                                            padding: '16px 24px',
+                                            padding: '16px 12px',
                                             fontSize: 10.5, fontWeight: 700,
                                             color: 'var(--text-muted)',
-                                            textAlign: col.align === 'center' ? 'center' : col.align === 'right' ? 'right' : 'left',
+                                            textAlign: col.align === 'center' ? 'center' : 'left',
                                             textTransform: 'uppercase', letterSpacing: '0.08em',
                                             borderBottom: '1px solid var(--border-subtle)',
                                             width: col.width,
@@ -261,28 +258,32 @@ export default function Home({ jds, onNavigate }: HomeProps) {
                                         </td>
                                         <td style={{ padding: '20px 24px', fontSize: 13, color: 'var(--text-secondary)' }}>{jd.department}</td>
                                         <td style={{ padding: '20px 24px', fontSize: 13, color: 'var(--text-secondary)' }}>{jd.location}</td>
-                                        <td style={{ padding: '20px 24px' }}>
-                                            <span className={STAGE_BADGE_CLASS[jd.status]} style={{ fontSize: 10.5, padding: '3px 8px' }}>
+                                        <td style={{ padding: '16px 12px' }}>
+                                            <span className={STAGE_BADGE_CLASS[jd.status]} style={{ fontSize: 10, padding: '3px 7px', whiteSpace: 'normal', display: 'inline-block', lineHeight: 1.4, textAlign: 'center' }}>
                                                 {STAGE_DISPLAY[jd.status]}
                                             </span>
                                         </td>
-                                        <td style={{ padding: '20px 24px', fontSize: 13, fontWeight: 700, textAlign: 'center', fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+                                        <td style={{ padding: '16px 12px', fontSize: 13, fontWeight: 700, textAlign: 'center', fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
                                             {jd.applicationCount ?? '—'}
                                         </td>
-                                        <td style={{ padding: '20px 24px', fontSize: 13, fontWeight: 700, color: 'var(--strong-text)', textAlign: 'center', fontFamily: 'Outfit, sans-serif' }}>
+                                        <td style={{ padding: '16px 12px', fontSize: 13, fontWeight: 700, color: 'var(--strong-text)', textAlign: 'center', fontFamily: 'Outfit, sans-serif' }}>
                                             {jd.strongCount ?? '—'}
                                         </td>
-                                        <td style={{ padding: '20px 24px', fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>
+                                        <td style={{ padding: '16px 12px', fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>
                                             {jd.daysOpen != null ? `${jd.daysOpen}d` : '—'}
                                         </td>
-                                        <td style={{ padding: '20px 24px', textAlign: 'right' }}>
+                                        <td style={{ padding: '16px 12px', textAlign: 'center' }}>
                                             <button
                                                 className="btn-primary"
-                                                style={{ fontSize: 12.5, padding: '9px 20px', fontWeight: 700, minWidth: 130, whiteSpace: 'nowrap' }}
+                                                style={{
+                                                    fontSize: 12.5, padding: '9px 0', fontWeight: 700,
+                                                    width: 155, whiteSpace: 'nowrap',
+                                                    textAlign: 'center', display: 'inline-block',
+                                                }}
                                                 onClick={() => handleRowCTA(jd)}
                                                 id={`home-cta-${jd.id}`}
                                             >
-                                                {STAGE_CTA[jd.status].label}
+                                                {STAGE_CTA[jd.status]?.label || 'Next'}
                                             </button>
                                         </td>
                                     </tr>

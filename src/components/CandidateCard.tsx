@@ -69,13 +69,16 @@ export default function CandidateCard({ candidate, onClick, onToggleShortlist, r
                     <ScoreRing score={candidate.compositeScore} size={60} strokeWidth={6} showLabel={false} />
                     {rank && (
                         <div style={{
-                            position: 'absolute', top: -5, left: -5,
-                            width: 20, height: 20, borderRadius: '50%',
+                            position: 'absolute', top: -6, left: -8,
+                            minWidth: 20, height: 20, borderRadius: 100,
+                            paddingLeft: 4, paddingRight: 4,
                             background: 'var(--accent-purple)', color: 'white',
-                            fontSize: 10, fontWeight: 800,
+                            fontSize: rank >= 100 ? 8 : rank >= 10 ? 9 : 10,
+                            fontWeight: 800,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             border: '2px solid var(--bg-card)',
                             boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                            whiteSpace: 'nowrap',
                         }}>
                             {rank}
                         </div>

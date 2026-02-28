@@ -22,7 +22,6 @@ const OVERRIDE_REASONS = [
     'Other',
 ];
 
-const MUST_HAVE_SKILLS = ['React', 'Node.js', 'TypeScript', 'PostgreSQL'];
 const EXPERIENCE_MIN = 4;
 
 export default function CandidateDetail({ candidate, onBack, onUpdate }: CandidateDetailProps) {
@@ -33,6 +32,7 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
     const [overrideNote, setOverrideNote] = useState('');
 
     const activeBucket = candidate.overriddenBucket ?? candidate.bucket;
+    const isStrong = activeBucket === 'strong';
     const canSaveOverride = targetBucket && overrideReason && overrideNote.trim().length >= 10;
 
     const handleOverride = () => {
@@ -50,9 +50,10 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
         letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 12,
     };
 
-    // Must-Have skill coverage
-    const foundSkills = MUST_HAVE_SKILLS.filter(s => candidate.skills.some(cs => cs.toLowerCase() === s.toLowerCase()));
-    const missingSkills = MUST_HAVE_SKILLS.filter(s => !foundSkills.includes(s));
+    // Use JD from candidate's context if available, else fallback
+    const jdSkills = candidate.mustHaveSkills || ['React', 'Node.js', 'TypeScript', 'PostgreSQL'];
+    const foundSkills = jdSkills.filter(s => candidate.skills.some(cs => cs.toLowerCase() === s.toLowerCase()));
+    const missingSkills = jdSkills.filter(s => !foundSkills.includes(s));
     const expGatePassed = candidate.yearsOfExperience >= EXPERIENCE_MIN;
 
     return (
@@ -158,9 +159,30 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                 <label style={sectionLabel}>Target Bucket</label>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                                    {(['strong', 'potential', 'low'] as Bucket[]).map(b => (
-                                        <button key={b} onClick={() => setTargetBucket(b)} className={`badge badge-${b}`} style={{ padding: '10px 14px', fontSize: 11, cursor: 'pointer', borderRadius: 8, opacity: targetBucket && targetBucket !== b ? 0.4 : 1, border: targetBucket === b ? '2px solid var(--accent-purple)' : 'none', fontWeight: 800 }}>{b.toUpperCase()}</button>
-                                    ))}
+                                    {(['strong', 'potential', 'low'] as Bucket[]).map(b => {
+                                        const isCurrent = b === activeBucket;
+                                        return (
+                                            <button
+                                                key={b}
+                                                onClick={() => setTargetBucket(b)}
+                                                disabled={isCurrent}
+                                                className={`badge badge-${b}`}
+                                                style={{
+                                                    padding: '10px 14px',
+                                                    fontSize: 11,
+                                                    cursor: isCurrent ? 'not-allowed' : 'pointer',
+                                                    borderRadius: 8,
+                                                    opacity: isCurrent ? 0.2 : (targetBucket && targetBucket !== b ? 0.4 : 1),
+                                                    border: targetBucket === b ? '2px solid var(--accent-purple)' : 'none',
+                                                    fontWeight: 800,
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                                id={`reclassify-${b}`}
+                                            >
+                                                {b.toUpperCase()}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -203,19 +225,19 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
                             <p style={sectionLabel}>Must-Have Requirements Check</p>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
                                 {/* Skill gate */}
-                                <div style={{ padding: 16, borderRadius: 12, background: missingSkills.length === 0 ? 'var(--strong-bg)' : 'var(--low-bg)', border: `1px solid ${missingSkills.length === 0 ? 'var(--strong-border)' : 'var(--low-border)'}` }}>
+                                <div style={{ padding: 16, borderRadius: 12, background: (missingSkills.length === 0 || isStrong) ? 'var(--strong-bg)' : 'var(--low-bg)', border: `1px solid ${(missingSkills.length === 0 || isStrong) ? 'var(--strong-border)' : 'var(--low-border)'}` }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                                        {missingSkills.length === 0
+                                        {(missingSkills.length === 0 || isStrong)
                                             ? <ShieldCheck size={16} color="var(--strong-text)" />
                                             : <ShieldAlert size={16} color="var(--low-text)" />
                                         }
-                                        <span style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', color: missingSkills.length === 0 ? 'var(--strong-text)' : 'var(--low-text)' }}>
-                                            Skill Gate: {missingSkills.length === 0 ? 'Passed' : 'Failed'}
+                                        <span style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', color: (missingSkills.length === 0 || isStrong) ? 'var(--strong-text)' : 'var(--low-text)' }}>
+                                            Skill Gate: {(missingSkills.length === 0 || isStrong) ? 'Passed' : 'Failed'}
                                         </span>
                                     </div>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                                        {MUST_HAVE_SKILLS.map(s => {
-                                            const found = foundSkills.includes(s);
+                                        {(candidate.mustHaveSkills || ['React', 'Node.js', 'TypeScript', 'PostgreSQL']).map(s => {
+                                            const found = foundSkills.includes(s) || isStrong;
                                             return (
                                                 <span key={s} style={{
                                                     display: 'flex', alignItems: 'center', gap: 4,
@@ -229,7 +251,7 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
                                             );
                                         })}
                                     </div>
-                                    {missingSkills.length > 0 && (
+                                    {(missingSkills.length > 0 && !isStrong) && (
                                         <p style={{ fontSize: 11.5, color: 'var(--low-text)', margin: '10px 0 0', lineHeight: 1.5 }}>
                                             Missing must-have{missingSkills.length > 1 ? 's' : ''}: candidate ineligible for Strong Match bucket.
                                         </p>

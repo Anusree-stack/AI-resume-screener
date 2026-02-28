@@ -7,12 +7,11 @@ interface ProcessingProps {
     onComplete: () => void;
 }
 
-// ─── Static stage config (outside component to keep stable reference) ─────────
 const STAGE_CONFIG = [
-    { id: 'extracting', label: 'Extracting Text', duration: 1800 },
-    { id: 'analyzing', label: 'AI Analysis', duration: 2400 },
-    { id: 'scoring', label: 'Computing Scores', duration: 1500 },
-    { id: 'bucketing', label: 'Assigning Buckets', duration: 800 },
+    { id: 'extracting', label: 'Extracting Text', duration: 2800 },
+    { id: 'analyzing', label: 'AI Analysis', duration: 3600 },
+    { id: 'scoring', label: 'Computing Scores', duration: 2400 },
+    { id: 'bucketing', label: 'Assigning Buckets', duration: 1200 },
 ];
 
 const TOTAL_DURATION = STAGE_CONFIG.reduce((s, st) => s + st.duration, 0);
@@ -23,15 +22,22 @@ const STAGE_CUMULATIVE = STAGE_CONFIG.reduce<number[]>((acc, s, i) => {
 }, []);
 
 export default function Processing({ fileCount, onComplete }: ProcessingProps) {
+    // React state only for coarse transitions (4 stage changes + done)
     const [currentStage, setCurrentStage] = useState(0);
-    const [stageProgress, setStageProgress] = useState(0);
-    const [overallProgress, setOverallProgress] = useState(0);
     const [done, setDone] = useState(false);
-    const [processedCount, setProcessedCount] = useState(0);
 
-    // Keep onComplete stable so it doesn't restart the effect
+    // DOM refs for high-frequency updates (bypasses React batching)
+    const overallBarRef = useRef<HTMLDivElement>(null);
+    const overallPctRef = useRef<HTMLSpanElement>(null);
+    const stageBarRef = useRef<HTMLDivElement>(null);
+    const stagePctRef = useRef<HTMLSpanElement>(null);
+    const processedRef = useRef<HTMLSpanElement>(null);
+
     const onCompleteRef = useRef(onComplete);
     useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+
+    // Track current stage in a ref so the animation loop doesn't need React state
+    const currentStageRef = useRef(0);
 
     useEffect(() => {
         let raf: number;
@@ -42,48 +48,51 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
             const elapsed = timestamp - start;
             const clamped = Math.min(elapsed, TOTAL_DURATION);
 
-            // Overall progress — start from 1% on first frame so bar is visibly moving
-            const pct = (clamped / TOTAL_DURATION) * 100;
-            setOverallProgress(elapsed > 0 ? Math.max(pct, 1) : 0);
+            // Overall progress — update DOM directly for smoothness
+            const pct = Math.max((clamped / TOTAL_DURATION) * 100, elapsed > 30 ? 1 : 0);
+            if (overallBarRef.current) overallBarRef.current.style.width = `${pct.toFixed(2)}%`;
+            if (overallPctRef.current) overallPctRef.current.textContent = `${Math.round(pct)}%`;
 
-            // Resolve current stage index
+            // Processed count
+            const processed = Math.round((clamped / TOTAL_DURATION) * fileCount);
+            if (processedRef.current) processedRef.current.textContent = `Processed ${processed} of ${fileCount} candidates`;
+
+            // Resolve current stage
             let idx = 0;
             for (let i = 0; i < STAGE_CUMULATIVE.length; i++) {
                 if (clamped >= STAGE_CUMULATIVE[i]) idx = i + 1;
                 else break;
             }
             idx = Math.min(idx, STAGE_CONFIG.length - 1);
-            setCurrentStage(idx);
 
-            // Per-stage progress
+            // Only trigger React re-render on stage transitions (rare)
+            if (idx !== currentStageRef.current) {
+                currentStageRef.current = idx;
+                setCurrentStage(idx);
+            }
+
+            // Per-stage progress — also direct DOM
             const prevCum = idx === 0 ? 0 : STAGE_CUMULATIVE[idx - 1];
-            const stagePct = ((clamped - prevCum) / STAGE_CONFIG[idx].duration) * 100;
-            setStageProgress(Math.min(Math.max(stagePct, elapsed > 0 ? 2 : 0), 100));
-
-            // Processed candidate count
-            setProcessedCount(Math.round((clamped / TOTAL_DURATION) * fileCount));
+            const stagePct = Math.min(Math.max(((clamped - prevCum) / STAGE_CONFIG[idx].duration) * 100, elapsed > 30 ? 2 : 0), 100);
+            if (stageBarRef.current) stageBarRef.current.style.width = `${stagePct.toFixed(2)}%`;
+            if (stagePctRef.current) stagePctRef.current.textContent = `${Math.round(stagePct)}%`;
 
             if (elapsed < TOTAL_DURATION) {
                 raf = requestAnimationFrame(animate);
             } else {
-                setOverallProgress(100);
-                setStageProgress(100);
-                setProcessedCount(fileCount);
+                if (overallBarRef.current) overallBarRef.current.style.width = '100%';
+                if (overallPctRef.current) overallPctRef.current.textContent = '100%';
+                if (stageBarRef.current) stageBarRef.current.style.width = '100%';
+                if (processedRef.current) processedRef.current.textContent = `${fileCount} candidates scored and bucketed`;
                 setDone(true);
                 setTimeout(() => onCompleteRef.current(), 1200);
             }
         };
 
-        // 60ms delay so the component mounts and renders before animation
         const t = setTimeout(() => { raf = requestAnimationFrame(animate); }, 60);
+        return () => { clearTimeout(t); cancelAnimationFrame(raf); };
+    }, [fileCount]);
 
-        return () => {
-            clearTimeout(t);
-            cancelAnimationFrame(raf);
-        };
-    }, [fileCount]); // ← only fileCount, not stages (stable now)
-
-    // Render-time: combine static config with dynamic sublabel and icon
     const stages = [
         { ...STAGE_CONFIG[0], sublabel: `Parsing ${fileCount} resume${fileCount !== 1 ? 's' : ''} into structured data`, icon: <FileText size={18} /> },
         { ...STAGE_CONFIG[1], sublabel: 'Running skill alignment and context scoring', icon: <Brain size={18} /> },
@@ -120,20 +129,19 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
                     {done ? 'Analysis Complete!' : 'Screening in Progress...'}
                 </h1>
                 <p style={{ fontSize: 15, color: 'var(--text-secondary)', marginBottom: 48 }}>
-                    {done
-                        ? `${fileCount} candidates scored and bucketed`
-                        : `Processed ${processedCount} of ${fileCount} candidates`
-                    }
+                    {/* Updated via DOM ref */}
+                    <span ref={processedRef}>Processed 0 of {fileCount} candidates</span>
                 </p>
 
                 {/* Overall Progress */}
                 <div style={{ marginBottom: 48 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                         <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Overall Progress</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-purple)' }}>{Math.round(overallProgress)}%</span>
+                        <span ref={overallPctRef} style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-purple)' }}>0%</span>
                     </div>
-                    <div className="progress-bar" style={{ height: 6 }}>
-                        <div className="progress-fill" style={{ width: `${overallProgress}%`, transition: 'width 120ms linear' }} />
+                    <div className="progress-bar" style={{ height: 8 }}>
+                        {/* width updated via DOM ref — no CSS transition */}
+                        <div ref={overallBarRef} className="progress-fill" style={{ width: '0%' }} />
                     </div>
                 </div>
 
@@ -169,15 +177,15 @@ export default function Processing({ fileCount, onComplete }: ProcessingProps) {
                                         <span style={{ fontSize: 14, fontWeight: 600, color: isActive ? 'var(--accent-purple)' : isDoneStage ? 'var(--accent-green)' : 'var(--text-secondary)' }}>
                                             {stage.label}
                                         </span>
-                                        {isActive && (
-                                            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-purple)' }}>{Math.round(stageProgress)}%</span>
-                                        )}
+                                        {/* Stage % text updated via DOM ref when active */}
+                                        {isActive && <span ref={stagePctRef} style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-purple)' }}>0%</span>}
                                         {isDoneStage && <span style={{ fontSize: 12, color: 'var(--accent-green)', fontWeight: 500 }}>✓ Done</span>}
                                     </div>
                                     <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{stage.sublabel}</p>
                                     {isActive && (
                                         <div className="progress-bar" style={{ marginTop: 10 }}>
-                                            <div className="progress-fill" style={{ width: `${stageProgress}%`, transition: 'width 120ms linear' }} />
+                                            {/* width updated via DOM ref — no CSS transition */}
+                                            <div ref={stageBarRef} className="progress-fill" style={{ width: '0%' }} />
                                         </div>
                                     )}
                                 </div>

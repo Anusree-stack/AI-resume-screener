@@ -24,7 +24,7 @@ export default function VirtualBucket({
                     candidate={candidate}
                     onClick={() => onSelectCandidate(candidate.id)}
                     onToggleShortlist={onToggleShortlist}
-                    rank={index + 1}
+                    rank={candidate.globalRank}
                 />
             </div>
         );

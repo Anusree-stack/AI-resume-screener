@@ -125,20 +125,6 @@ export default function TopNav({ currentScreen, onHome, onCreateJD }: TopNavProp
                 >
                     {dark ? <Sun size={15} /> : <Moon size={15} />}
                 </button>
-
-                {/* Status pill */}
-                <div style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '5px 12px',
-                    background: 'var(--strong-bg)',
-                    border: '1px solid var(--strong-border)',
-                    borderRadius: 100,
-                    fontSize: 12, fontWeight: 600,
-                    color: 'var(--strong-text)',
-                }}>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-green)', display: 'inline-block' }} />
-                    Screening Mode
-                </div>
             </div>
         </nav>
     );
