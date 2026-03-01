@@ -118,9 +118,9 @@ export default function OverrideAudit({ candidates, roleName, onBack }: Override
                                     style={{
                                         display: 'grid',
                                         gridTemplateColumns: '1.6fr 140px 140px 120px 150px 1.4fr 140px',
-                                        alignItems: 'center',
+                                        alignItems: 'start',
                                         gap: 0,
-                                        padding: '14px 20px',
+                                        padding: '16px 20px',
                                         borderBottom: i < overridden.length - 1 ? '1px solid var(--border-subtle)' : 'none',
                                         minHeight: 60,
                                     }}
@@ -128,26 +128,26 @@ export default function OverrideAudit({ candidates, roleName, onBack }: Override
                                 >
                                     {/* Candidate */}
                                     <div style={{ paddingRight: 16 }}>
-                                        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
-                                        <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.currentRole} · {c.currentCompany}</div>
+                                        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{c.name}</div>
+                                        <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.4 }}>{c.currentRole} · {c.currentCompany}</div>
                                     </div>
 
                                     {/* Original bucket */}
-                                    <div>
+                                    <div style={{ paddingTop: 2 }}>
                                         <span className={`badge ${BUCKET_BADGE_CLASS[from]}`} style={{ fontSize: 10, opacity: 0.7 }}>
                                             {BUCKET_LABEL[from]}
                                         </span>
                                     </div>
 
                                     {/* Reclassified to */}
-                                    <div>
+                                    <div style={{ paddingTop: 2 }}>
                                         <span className={`badge ${BUCKET_BADGE_CLASS[to]}`} style={{ fontSize: 10 }}>
                                             {BUCKET_LABEL[to]}
                                         </span>
                                     </div>
 
                                     {/* Direction */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingTop: 2 }}>
                                         {upgraded
                                             ? <><TrendingUp size={13} color="var(--accent-green)" /><span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-green)' }}>Upgraded</span></>
                                             : <><TrendingDown size={13} color="var(--accent-red)" /><span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-red)' }}>Downgraded</span></>
@@ -155,7 +155,7 @@ export default function OverrideAudit({ candidates, roleName, onBack }: Override
                                     </div>
 
                                     {/* Primary reason */}
-                                    <div>
+                                    <div style={{ paddingTop: 2 }}>
                                         <span style={{
                                             display: 'inline-block', padding: '3px 9px', borderRadius: 100,
                                             background: 'hsla(38,92%,55%,0.1)', color: 'var(--accent-amber)',
@@ -182,7 +182,7 @@ export default function OverrideAudit({ candidates, roleName, onBack }: Override
                                     </div>
 
                                     {/* Date */}
-                                    <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{dateStr}</div>
+                                    <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap', paddingTop: 2 }}>{dateStr}</div>
                                 </div>
                             );
                         })}
