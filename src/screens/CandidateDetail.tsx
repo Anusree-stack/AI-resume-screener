@@ -4,10 +4,11 @@ import {
     ArrowLeft, Star, MapPin, Clock, GraduationCap,
     CheckCircle2, RotateCcw, AlertCircle, FileText, X, ShieldCheck, ShieldAlert
 } from 'lucide-react';
-import type { Candidate, Bucket } from '../types';
+import type { Candidate, Bucket, JobDescription } from '../types';
 
 interface CandidateDetailProps {
     candidate: Candidate;
+    jd: JobDescription | null;
     onBack: () => void;
     onUpdate: (candidate: Candidate) => void;
 }
@@ -24,7 +25,7 @@ const OVERRIDE_REASONS = [
 
 const EXPERIENCE_MIN = 4;
 
-export default function CandidateDetail({ candidate, onBack, onUpdate }: CandidateDetailProps) {
+export default function CandidateDetail({ candidate, jd, onBack, onUpdate }: CandidateDetailProps) {
     const [overrideOpen, setOverrideOpen] = useState(false);
     const [isJDOpen, setIsJDOpen] = useState(false);
     const [targetBucket, setTargetBucket] = useState<Bucket | ''>('');
@@ -312,13 +313,13 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                         <div className="card" style={{ padding: '24px' }}>
                             <p style={sectionLabel}>Professional History</p>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 28, position: 'relative', paddingLeft: 24 }}>
-                                {/* Vertical timeline line — sits at x=6, same centre as each 12px dot */}
-                                <div style={{ position: 'absolute', left: 5, top: 6, bottom: 6, width: 2, background: 'var(--border-subtle)' }} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 28, position: 'relative', paddingLeft: 32 }}>
+                                {/* Vertical timeline line — precisely centered at x=16 */}
+                                <div style={{ position: 'absolute', left: 15, top: 6, bottom: 6, width: 2, background: 'var(--border-subtle)' }} />
                                 {(candidate.experienceHistory || []).map((exp, i) => (
                                     <div key={i} style={{ position: 'relative' }}>
-                                        {/* Dot — 12×12, centred on the line (left: -1 from edge, i.e. left:5 - 6 = -1 relative to paddingLeft:24 → left:-13) */}
-                                        <div style={{ position: 'absolute', left: -19, top: 2, width: 12, height: 12, borderRadius: '50%', background: i === 0 ? 'var(--accent-purple)' : 'var(--bg-card)', border: `2px solid ${i === 0 ? 'var(--accent-purple)' : 'var(--border-subtle)'}`, zIndex: 1 }} />
+                                        {/* Dot — 12×12, precisely centered at x=16 (32px padding - 22px left + 6px half-width) */}
+                                        <div style={{ position: 'absolute', left: -22, top: 2, width: 12, height: 12, borderRadius: '50%', background: i === 0 ? 'var(--accent-purple)' : 'var(--bg-card)', border: `2px solid ${i === 0 ? 'var(--accent-purple)' : 'var(--border-subtle)'}`, zIndex: 1 }} />
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                                             <h4 style={{ fontSize: 13.5, fontWeight: 700, margin: 0 }}>{exp.role}</h4>
                                             <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', whiteSpace: 'nowrap', marginLeft: 8 }}>{exp.duration}</span>
@@ -377,30 +378,37 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
                         </div>
                         <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
                             <div style={{ marginBottom: 24 }}>
-                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Role</h4>
-                                <p style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 700 }}>Senior Full-Stack Engineer</p>
-                                <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Engineering · Remote / Bangalore · 4–8 years</p>
+                                <h4 style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>Role</h4>
+                                <p style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 700 }}>{jd?.title ?? 'Role Context'}</p>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                                    {jd?.department} · {jd?.location} · {jd?.experienceMin}-{jd?.experienceMax} years
+                                </div>
                             </div>
+
                             <div style={{ marginBottom: 24 }}>
-                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Must-Have Skills</h4>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                                    {['React', 'Node.js', 'TypeScript', 'PostgreSQL'].map(s => (
-                                        <span key={s} style={{ padding: '4px 10px', borderRadius: 6, background: 'var(--accent-purple-dim)', color: 'var(--accent-purple)', fontSize: 12, fontWeight: 600, border: '1px solid var(--border-glow)' }}>{s}</span>
+                                <h4 style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>Must-Have Skills</h4>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                    {(jd?.mustHaveSkills ?? []).map(s => (
+                                        <span key={s} className="tag" style={{ background: 'var(--accent-purple-dim)', color: 'var(--accent-purple)', borderColor: 'transparent' }}>{s}</span>
                                     ))}
                                 </div>
                             </div>
-                            <div style={{ marginBottom: 24 }}>
-                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Nice-to-Have</h4>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                                    {['GraphQL', 'AWS', 'Redis', 'Docker', 'System Design'].map(s => (
-                                        <span key={s} style={{ padding: '4px 10px', borderRadius: 6, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontSize: 12, fontWeight: 600, border: '1px solid var(--border-subtle)' }}>{s}</span>
-                                    ))}
+
+                            {jd?.niceToHave && jd.niceToHave.length > 0 && (
+                                <div style={{ marginBottom: 24 }}>
+                                    <h4 style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>Nice-To-Have</h4>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                        {jd.niceToHave.map(s => (
+                                            <span key={s} className="tag">{s}</span>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
+
                             <div>
-                                <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Role Description</h4>
-                                <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-                                    {`We're looking for a Senior Full-Stack Engineer to join our product team. You'll work on mission-critical features, lead technical architecture decisions, and mentor junior engineers.\n\nYou'll collaborate closely with Product, Design, and Data in a cross-functional environment. Fintech or SaaS background is strongly preferred.`}
+                                <h4 style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>Role Description</h4>
+                                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+                                    {jd?.description}
                                 </p>
                             </div>
                         </div>

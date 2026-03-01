@@ -15,7 +15,7 @@ import Shortlist from './screens/Shortlist';
 import OverrideAudit from './screens/OverrideAudit';
 
 // Bump this whenever stored data shape changes so browsers flush stale localStorage
-const CACHE_VERSION = 'v3-profiles-2026-03-01';
+const CACHE_VERSION = 'v3-profiles-2026-03-01-v5';
 
 export default function App() {
   const [screen, setScreen] = useState<AppScreen>('home');
@@ -223,6 +223,7 @@ export default function App() {
       {screen === 'candidate-detail' && selectedCandidate && (
         <CandidateDetail
           candidate={selectedCandidate}
+          jd={activeJd}
           onBack={() => setScreen('dashboard')}
           onUpdate={handleUpdateCandidate}
         />
