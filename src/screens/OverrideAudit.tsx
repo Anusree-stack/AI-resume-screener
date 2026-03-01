@@ -86,9 +86,9 @@ export default function OverrideAudit({ candidates, roleName, onBack }: Override
                         {/* Table header */}
                         <div style={{
                             display: 'grid',
-                            gridTemplateColumns: '1.6fr 140px 140px 120px 150px 1.4fr 140px',
-                            gap: 0,
-                            padding: '10px 20px',
+                            gridTemplateColumns: '1.4fr 125px 125px 95px 150px 1.2fr 125px',
+                            columnGap: 24,
+                            padding: '12px 24px',
                             background: 'var(--bg-secondary)',
                             borderBottom: '1px solid var(--border-subtle)',
                             alignItems: 'center',
@@ -117,45 +117,45 @@ export default function OverrideAudit({ candidates, roleName, onBack }: Override
                                     key={c.id}
                                     style={{
                                         display: 'grid',
-                                        gridTemplateColumns: '1.6fr 140px 140px 120px 150px 1.4fr 140px',
+                                        gridTemplateColumns: '1.4fr 125px 125px 95px 150px 1.2fr 125px',
+                                        columnGap: 24,
                                         alignItems: 'start',
-                                        gap: 0,
-                                        padding: '16px 20px',
+                                        padding: '18px 24px',
                                         borderBottom: i < overridden.length - 1 ? '1px solid var(--border-subtle)' : 'none',
-                                        minHeight: 60,
+                                        minHeight: 70,
                                     }}
                                     id={`override-row-${c.id}`}
                                 >
                                     {/* Candidate */}
-                                    <div style={{ paddingRight: 16 }}>
-                                        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{c.name}</div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>{c.name}</div>
                                         <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.4 }}>{c.currentRole} · {c.currentCompany}</div>
                                     </div>
 
                                     {/* Original bucket */}
-                                    <div style={{ paddingTop: 2 }}>
+                                    <div style={{ marginTop: -1 }}>
                                         <span className={`badge ${BUCKET_BADGE_CLASS[from]}`} style={{ fontSize: 10, opacity: 0.7 }}>
                                             {BUCKET_LABEL[from]}
                                         </span>
                                     </div>
 
                                     {/* Reclassified to */}
-                                    <div style={{ paddingTop: 2 }}>
+                                    <div style={{ marginTop: -1 }}>
                                         <span className={`badge ${BUCKET_BADGE_CLASS[to]}`} style={{ fontSize: 10 }}>
                                             {BUCKET_LABEL[to]}
                                         </span>
                                     </div>
 
                                     {/* Direction */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingTop: 2 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 1 }}>
                                         {upgraded
-                                            ? <><TrendingUp size={13} color="var(--accent-green)" /><span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-green)' }}>Upgraded</span></>
-                                            : <><TrendingDown size={13} color="var(--accent-red)" /><span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-red)' }}>Downgraded</span></>
+                                            ? <><TrendingUp size={12} color="var(--accent-green)" /><span style={{ fontSize: 10, fontWeight: 800, color: 'var(--accent-green)', textTransform: 'uppercase' }}>Up</span></>
+                                            : <><TrendingDown size={12} color="var(--accent-red)" /><span style={{ fontSize: 10, fontWeight: 800, color: 'var(--accent-red)', textTransform: 'uppercase' }}>Down</span></>
                                         }
                                     </div>
 
                                     {/* Primary reason */}
-                                    <div style={{ paddingTop: 2 }}>
+                                    <div style={{ marginTop: -1 }}>
                                         <span style={{
                                             display: 'inline-block', padding: '3px 9px', borderRadius: 100,
                                             background: 'hsla(38,92%,55%,0.1)', color: 'var(--accent-amber)',
@@ -182,7 +182,7 @@ export default function OverrideAudit({ candidates, roleName, onBack }: Override
                                     </div>
 
                                     {/* Date */}
-                                    <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap', paddingTop: 2 }}>{dateStr}</div>
+                                    <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap', marginTop: 1 }}>{dateStr}</div>
                                 </div>
                             );
                         })}
