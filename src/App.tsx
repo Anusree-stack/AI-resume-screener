@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from 'react';
 import './index.css';
 import type { AppScreen, Candidate, JobDescription, Bucket } from './types';
 import { jdLibraryBase } from './mockData';
-import { buildCandidateStore, generateCandidatesForJD } from './candidateStore';
+import { buildCandidateStore, generateCandidatesForJD, getProfileKey } from './candidateStore';
 import TopNav from './components/TopNav';
 import Home from './screens/Home';
 import JDSetup from './screens/JDSetup';
@@ -34,15 +34,26 @@ export default function App() {
     localStorage.setItem('talentiq_jds', JSON.stringify(jds));
   }, [jds]);
 
-  // Pre-build the candidate store once from the base JDs
-  // When new JDs are published they won't have pre-built pools — we generate on demand via Processing
-  const [candidateStore] = useState(() => buildCandidateStore(jdLibraryBase));
+  // Candidate Store — seeded from localStorage, persisted on every sync
+  const [candidateStore, setCandidateStore] = useState<Record<string, Candidate[]>>(() => {
+    try {
+      const saved = localStorage.getItem('talentiq_pool');
+      return saved ? JSON.parse(saved) : buildCandidateStore(jdLibraryBase);
+    } catch {
+      return buildCandidateStore(jdLibraryBase);
+    }
+  });
+
+  // Persist candidate pools to localStorage
+  useEffect(() => {
+    localStorage.setItem('talentiq_pool', JSON.stringify(candidateStore));
+  }, [candidateStore]);
 
   // Compute strongCount per JD dynamically from the store, then attach it
   const jdsWithCounts = useMemo<JobDescription[]>(() => {
     return jds.map(jd => {
       const pool = candidateStore[jd.id] ?? [];
-      const strong = pool.filter(c => (c.overriddenBucket ?? c.bucket) === 'strong').length;
+      const strong = pool.filter((c: Candidate) => (c.overriddenBucket ?? c.bucket) === 'strong').length;
       return {
         ...jd,
         applicationCount: pool.length > 0 ? pool.length : jd.applicationCount,
@@ -83,15 +94,25 @@ export default function App() {
   const handleCVUploadNext = (files: File[]) => {
     setUploadedFileCount(files.length);
     const jdForUpload = activeJd ?? jdLibraryBase[0];
+    const profileKey = getProfileKey(jdForUpload.title);
     const generated = generateCandidatesForJD(
       { ...jdForUpload, applicationCount: files.length },
-      'fullstack'
+      profileKey
     );
     setCandidates(generated);
     setScreen('processing');
   };
 
-  const handleProcessingComplete = () => setScreen('dashboard');
+  const handleProcessingComplete = () => {
+    // Save newly processed candidates into the global store
+    if (activeJd) {
+      setCandidateStore(prev => ({
+        ...prev,
+        [activeJd.id]: candidates
+      }));
+    }
+    setScreen('dashboard');
+  };
 
   const handleSelectCandidate = (id: string) => {
     setSelectedCandidateId(id);
@@ -99,11 +120,11 @@ export default function App() {
   };
 
   const handleUpdateCandidate = (updated: Candidate) => {
-    setCandidates(prev => prev.map(c => c.id === updated.id ? updated : c));
+    setCandidates(prev => prev.map((c: Candidate) => c.id === updated.id ? updated : c));
   };
 
   const handleRemoveFromShortlist = (id: string) => {
-    setCandidates(prev => prev.map(c => c.id === id ? { ...c, isShortlisted: false } : c));
+    setCandidates(prev => prev.map((c: Candidate) => c.id === id ? { ...c, isShortlisted: false } : c));
   };
 
   // Reset filters when switching roles to avoid stale state

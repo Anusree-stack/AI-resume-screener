@@ -158,7 +158,7 @@ export default function Dashboard({
                             </button>
                             <div>
                                 <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>Screening Dashboard</div>
-                                <h1 style={{ fontSize: 17, marginTop: 1, fontWeight: 800 }}>{roleName || 'Senior Full-Stack Engineer'}</h1>
+                                <h1 style={{ fontSize: 17, marginTop: 1, fontWeight: 800 }}>{jd?.title ?? roleName ?? 'Role Overview'}</h1>
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: 10 }}>
@@ -536,7 +536,7 @@ export default function Dashboard({
                         <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
                             <div style={{ marginBottom: 24 }}>
                                 <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Role Summary</h4>
-                                <p style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6 }}>{roleName || 'Senior Full-Stack Engineer'}</p>
+                                <p style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6 }}>{jd?.title ?? roleName ?? 'Role Overview'}</p>
                             </div>
                             <div style={{ marginBottom: 24 }}>
                                 <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Must-Have Skills</h4>

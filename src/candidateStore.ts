@@ -166,7 +166,37 @@ const ROLE_PROFILES: Record<string, RoleProfile> = {
         summaryFn: (company, tech) => `Managing ${company}'s entire cloud infrastructure across 3 regions using ${tech}. Achieved 99.97% uptime SLA over 12 consecutive months. Reduced infrastructure costs by 34% through right-sizing and spot-instance adoption. Owns the complete CI/CD pipeline used by 80+ engineers daily.`,
         prevSummaryFn: (company) => `Managed containerized workloads and CI/CD at ${company}. Automated routine infrastructure tasks, saving the team 20+ engineering hours per month. Introduced centralized observability using ELK stack and PagerDuty integrations.`,
     },
+    frontend: {
+        titles: [
+            'Senior Frontend Engineer', 'React Lead', 'UI Architect',
+            'Frontend Developer', 'Staff Frontend Engineer',
+        ],
+        prevTitles: [
+            'Frontend Engineer', 'Web Developer', 'UI Engineer',
+            'Junior React Developer',
+        ],
+        skillPool: ['React', 'TypeScript', 'Tailwind CSS', 'Redux', 'Next.js', 'Testing Library', 'Figma', 'Storybook', 'Vite', 'GraphQL', 'CSS Modules', 'State Management'],
+        techStack: [
+            'React, TypeScript, Tailwind CSS, Redux',
+            'Next.js, TypeScript, CSS Modules, GraphQL',
+            'React, Vite, Tailwind CSS, Storybook',
+        ],
+        summaryFn: (company, tech) => `Designing and implementing core UI components for ${company}'s design system. Expert in building performant React applications using ${tech}. Reduced main-thread blocking time by 45% through code-splitting and memoization strategies. Collaborates closely with Design to ensure pixel-perfect accessibility.`,
+        prevSummaryFn: (company) => `Built customer-facing dashboards at ${company}. Migrated a legacy codebase to a modern React architecture, improving developer velocity by 30%. Implemented a comprehensive unit testing suite using Jest and RTL.`,
+    },
 };
+
+export type ProfileKey = 'fullstack' | 'product' | 'backend' | 'dataanalyst' | 'devops' | 'frontend';
+
+export function getProfileKey(title: string): ProfileKey {
+    const t = title.toLowerCase();
+    if (t.includes('frontend')) return 'frontend';
+    if (t.includes('backend')) return 'backend';
+    if (t.includes('product')) return 'product';
+    if (t.includes('data') || t.includes('analyst')) return 'dataanalyst';
+    if (t.includes('devops') || t.includes('infra') || t.includes('reliability') || t.includes('sre')) return 'devops';
+    return 'fullstack';
+}
 
 // ─── Deterministic Seeded RNG ─────────────────────────────────────────────────
 // Ensures the same data is generated every page load
@@ -419,7 +449,7 @@ const JD_PROFILE_MAP: Record<string, string> = {
     jd1: 'fullstack',
     jd2: 'product',
     jd3: 'backend',
-    jd4: 'fullstack', // Frontend — use fullstack but JD has 0 apps so no candidates generated
+    jd4: 'frontend', // Frontend Engineer (React)
     jd5: 'dataanalyst',
     jd6: 'devops',
 };
