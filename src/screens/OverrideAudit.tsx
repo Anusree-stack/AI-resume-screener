@@ -86,11 +86,12 @@ export default function OverrideAudit({ candidates, roleName, onBack }: Override
                         {/* Table header */}
                         <div style={{
                             display: 'grid',
-                            gridTemplateColumns: '2fr 150px 150px 110px 160px 1fr 130px',
+                            gridTemplateColumns: '1.6fr 140px 140px 120px 150px 1.4fr 140px',
                             gap: 0,
-                            padding: '12px 20px',
+                            padding: '10px 20px',
                             background: 'var(--bg-secondary)',
                             borderBottom: '1px solid var(--border-subtle)',
+                            alignItems: 'center',
                         }}>
                             {['Candidate', 'Original Bucket', 'Reclassified To', 'Direction', 'Primary Reason', 'Justification', 'Date'].map(h => (
                                 <div key={h} style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)' }}>{h}</div>
@@ -116,17 +117,19 @@ export default function OverrideAudit({ candidates, roleName, onBack }: Override
                                     key={c.id}
                                     style={{
                                         display: 'grid',
-                                        gridTemplateColumns: '2fr 150px 150px 110px 160px 1fr 130px',
-                                        alignItems: 'center', gap: 0,
+                                        gridTemplateColumns: '1.6fr 140px 140px 120px 150px 1.4fr 140px',
+                                        alignItems: 'center',
+                                        gap: 0,
                                         padding: '14px 20px',
                                         borderBottom: i < overridden.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+                                        minHeight: 60,
                                     }}
                                     id={`override-row-${c.id}`}
                                 >
                                     {/* Candidate */}
-                                    <div>
-                                        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}>{c.name}</div>
-                                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{c.currentRole} · {c.currentCompany}</div>
+                                    <div style={{ paddingRight: 16 }}>
+                                        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
+                                        <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.currentRole} · {c.currentCompany}</div>
                                     </div>
 
                                     {/* Original bucket */}
@@ -144,31 +147,42 @@ export default function OverrideAudit({ candidates, roleName, onBack }: Override
                                     </div>
 
                                     {/* Direction */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                         {upgraded
-                                            ? <><TrendingUp size={14} color="var(--accent-green)" /><span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-green)' }}>Upgraded</span></>
-                                            : <><TrendingDown size={14} color="var(--accent-red)" /><span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-red)' }}>Downgraded</span></>
+                                            ? <><TrendingUp size={13} color="var(--accent-green)" /><span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-green)' }}>Upgraded</span></>
+                                            : <><TrendingDown size={13} color="var(--accent-red)" /><span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-red)' }}>Downgraded</span></>
                                         }
                                     </div>
 
                                     {/* Primary reason */}
                                     <div>
                                         <span style={{
-                                            display: 'inline-block', padding: '3px 10px', borderRadius: 100,
+                                            display: 'inline-block', padding: '3px 9px', borderRadius: 100,
                                             background: 'hsla(38,92%,55%,0.1)', color: 'var(--accent-amber)',
-                                            fontSize: 11, fontWeight: 700, border: '1px solid hsla(38,92%,55%,0.2)',
+                                            fontSize: 10, fontWeight: 700, border: '1px solid hsla(38,92%,55%,0.2)',
+                                            whiteSpace: 'nowrap',
                                         }}>
                                             {reason}
                                         </span>
                                     </div>
 
-                                    {/* Justification */}
-                                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, paddingRight: 12 }}>
+                                    {/* Justification — clamped to 2 lines */}
+                                    <div
+                                        title={justification}
+                                        style={{
+                                            fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5,
+                                            paddingRight: 16,
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical',
+                                            overflow: 'hidden',
+                                        }}
+                                    >
                                         {justification}
                                     </div>
 
                                     {/* Date */}
-                                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{dateStr}</div>
+                                    <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{dateStr}</div>
                                 </div>
                             );
                         })}
