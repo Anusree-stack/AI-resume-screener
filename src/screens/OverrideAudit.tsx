@@ -160,7 +160,7 @@ export default function OverrideAudit({ candidates, roleName, onBack }: Override
                                             display: 'inline-block', padding: '3px 9px', borderRadius: 100,
                                             background: 'hsla(38,92%,55%,0.1)', color: 'var(--accent-amber)',
                                             fontSize: 10, fontWeight: 700, border: '1px solid hsla(38,92%,55%,0.2)',
-                                            whiteSpace: 'nowrap',
+                                            lineHeight: 1.5,
                                         }}>
                                             {reason}
                                         </span>
