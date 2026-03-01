@@ -37,7 +37,7 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
 
     const handleOverride = () => {
         if (!canSaveOverride) return;
-        onUpdate({ ...candidate, overriddenBucket: targetBucket as Bucket, overrideReason, overrideNote });
+        onUpdate({ ...candidate, overriddenBucket: targetBucket as Bucket, overrideReason, overrideNote, overrideAt: new Date().toISOString() });
         setOverrideOpen(false);
     };
 
