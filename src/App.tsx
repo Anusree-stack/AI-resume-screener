@@ -14,15 +14,26 @@ import CandidateDetail from './screens/CandidateDetail';
 import Shortlist from './screens/Shortlist';
 import OverrideAudit from './screens/OverrideAudit';
 
+// Bump this whenever stored data shape changes so browsers flush stale localStorage
+const CACHE_VERSION = 'v3-profiles-2026-03-01';
+
 export default function App() {
   const [screen, setScreen] = useState<AppScreen>('home');
   const [uploadedFileCount, setUploadedFileCount] = useState(0);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
 
-  // JD list — seeded from localStorage, persisted on every change (Bug 4)
+  // ─── JD list — seeded from localStorage, persisted on every change ───────────
   const [jds, setJds] = useState<JobDescription[]>(() => {
     try {
+      // If cache version changed, flush everything to get fresh profiles
+      const storedVersion = localStorage.getItem('talentiq_version');
+      if (storedVersion !== CACHE_VERSION) {
+        localStorage.removeItem('talentiq_jds');
+        localStorage.removeItem('talentiq_pool');
+        localStorage.setItem('talentiq_version', CACHE_VERSION);
+        return jdLibraryBase;
+      }
       const saved = localStorage.getItem('talentiq_jds');
       return saved ? JSON.parse(saved) : jdLibraryBase;
     } catch { return jdLibraryBase; }

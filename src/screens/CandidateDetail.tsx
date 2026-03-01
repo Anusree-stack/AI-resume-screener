@@ -312,11 +312,13 @@ export default function CandidateDetail({ candidate, onBack, onUpdate }: Candida
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                         <div className="card" style={{ padding: '24px' }}>
                             <p style={sectionLabel}>Professional History</p>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, position: 'relative', paddingLeft: 16 }}>
-                                <div style={{ position: 'absolute', left: 4, top: 4, bottom: 4, width: 2, background: 'var(--border-subtle)' }} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 28, position: 'relative', paddingLeft: 24 }}>
+                                {/* Vertical timeline line — sits at x=6, same centre as each 12px dot */}
+                                <div style={{ position: 'absolute', left: 5, top: 6, bottom: 6, width: 2, background: 'var(--border-subtle)' }} />
                                 {(candidate.experienceHistory || []).map((exp, i) => (
                                     <div key={i} style={{ position: 'relative' }}>
-                                        <div style={{ position: 'absolute', left: -20, top: 4, width: 10, height: 10, borderRadius: '50%', background: i === 0 ? 'var(--accent-purple)' : 'var(--bg-card)', border: `2px solid ${i === 0 ? 'var(--accent-purple)' : 'var(--border-subtle)'}` }} />
+                                        {/* Dot — 12×12, centred on the line (left: -1 from edge, i.e. left:5 - 6 = -1 relative to paddingLeft:24 → left:-13) */}
+                                        <div style={{ position: 'absolute', left: -19, top: 2, width: 12, height: 12, borderRadius: '50%', background: i === 0 ? 'var(--accent-purple)' : 'var(--bg-card)', border: `2px solid ${i === 0 ? 'var(--accent-purple)' : 'var(--border-subtle)'}`, zIndex: 1 }} />
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                                             <h4 style={{ fontSize: 13.5, fontWeight: 700, margin: 0 }}>{exp.role}</h4>
                                             <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', whiteSpace: 'nowrap', marginLeft: 8 }}>{exp.duration}</span>
