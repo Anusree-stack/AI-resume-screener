@@ -343,6 +343,76 @@ export function generateCandidatesForJD(jd: JobDescription, profileKey: string):
     return candidates;
 }
 
+// ─── Override Seeder ─────────────────────────────────────────────────────────
+// Injects deterministic dummy override data into screened-stage candidate pools.
+// IMPORTANT: bucket stays at AI value; overriddenBucket is the human change.
+// All views use `overriddenBucket ?? bucket` so display is automatically consistent.
+
+
+const OVERRIDE_JUSTIFICATIONS: Record<string, string> = {
+    'Domain Expertise': 'Candidate has exceptional niche domain knowledge that the AI scoring model could not fully account for. Manually verified through portfolio review.',
+    'Culture Fit': 'Strong cultural alignment with the team confirmed during informal HR screening. Technical gap partially offset by demonstrated growth mindset.',
+    'Niche Skill Match': 'Holds rare expertise in a specialised sub-domain directly required for the role. Skill not surfaced in resume text but confirmed via LinkedIn and GitHub.',
+    'Leadership Potential': 'Clear evidence of team leadership and mentorship from reference checks. Role requires people management; this candidate has demonstrated that trajectory.',
+    'Portfolio Quality': 'Portfolio of shipped products significantly above peer benchmark. AI score underweighted practical output vs. keyword presence in resume.',
+    'Referral Context': 'Referred by a senior team member who can vouch for direct working experience. Referral adds signal beyond what resume text provides.',
+    'Seniority Mismatch': 'Candidate is overqualified relative to the JD seniority band. Reclassified down to avoid over-expectation mismatch during offer stage.',
+    'Communication Skills': 'Exceptional written and verbal communication confirmed via take-home assessment. Critical differentiator for this client-facing role.',
+};
+
+const SCREENED_STATUSES = new Set([
+    'Screening in Progress', 'Interview', 'Offer Extended', 'Offer Closed',
+]);
+
+function seedOverrides(candidates: Candidate[], status: string): Candidate[] {
+    if (!SCREENED_STATUSES.has(status) || candidates.length < 10) return candidates;
+
+    // Pick 4 deterministic indices spread across the list
+    const indices = [
+        Math.floor(candidates.length * 0.05),
+        Math.floor(candidates.length * 0.18),
+        Math.floor(candidates.length * 0.42),
+        Math.floor(candidates.length * 0.71),
+    ];
+
+    // Bucket transition pairs: [from, to] — designed to be interesting and varied
+    const transitions: [Bucket, Bucket][] = [
+        ['potential', 'strong'],  // upgraded — strong fighter
+        ['low', 'potential'],     // upgraded — hidden gem
+        ['strong', 'potential'],  // downgraded — overqualified
+        ['potential', 'strong'],  // upgraded — referral boost
+    ];
+
+    const reasonKeys = [
+        'Domain Expertise',
+        'Niche Skill Match',
+        'Seniority Mismatch',
+        'Referral Context',
+    ];
+
+    const now = new Date();
+    const updated = [...candidates];
+
+    indices.forEach((idx, i) => {
+        const candidate = updated[idx];
+        if (!candidate) return;
+        const [fromBucket, toBucket] = transitions[i];
+        const reason = reasonKeys[i];
+
+        // Force the AI bucket to match what we expect so the transition makes sense
+        updated[idx] = {
+            ...candidate,
+            bucket: fromBucket,
+            overriddenBucket: toBucket,
+            overrideReason: reason,
+            overrideJustification: OVERRIDE_JUSTIFICATIONS[reason],
+            overrideAt: new Date(now.getTime() - (i + 1) * 3 * 60 * 60 * 1000).toISOString(),
+        };
+    });
+
+    return updated;
+}
+
 // ─── JD → Profile Key Mapping ─────────────────────────────────────────────────
 
 const JD_PROFILE_MAP: Record<string, string> = {
@@ -359,13 +429,17 @@ const JD_PROFILE_MAP: Record<string, string> = {
 
 export type CandidateStore = Record<string, Candidate[]>;
 
-export function buildCandidateStore(jds: Pick<JobDescription, 'id' | 'title' | 'applicationCount' | 'mustHaveSkills' | 'experienceMin'>[]): CandidateStore {
+export function buildCandidateStore(
+    jds: (Pick<JobDescription, 'id' | 'title' | 'applicationCount' | 'mustHaveSkills' | 'experienceMin'> & { status?: string; })[]
+): CandidateStore {
     const store: CandidateStore = {};
     for (const jd of jds) {
         const profileKey = JD_PROFILE_MAP[jd.id] ?? 'fullstack';
-        store[jd.id] = (jd.applicationCount ?? 0) > 0
+        const raw = (jd.applicationCount ?? 0) > 0
             ? generateCandidatesForJD(jd as JobDescription, profileKey)
             : [];
+        // Inject dummy override data for roles that have been screened
+        store[jd.id] = seedOverrides(raw, jd.status ?? '');
     }
     return store;
 }

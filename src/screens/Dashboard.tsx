@@ -549,7 +549,7 @@ export default function Dashboard({
                             <div style={{ marginBottom: 24 }}>
                                 <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>Description</h4>
                                 <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-                                    We're looking for a Senior Full-Stack Engineer to join our product team. You'll work on mission-critical features, lead technical architecture decisions, and mentor junior engineers.{'\n\n'}You'll be embedded in a cross-functional team and collaborate closely with Product, Design, and Data.
+                                    {jd?.description ?? 'No description available for this role.'}
                                 </p>
                             </div>
                         </div>
