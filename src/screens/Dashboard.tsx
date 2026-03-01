@@ -1,6 +1,6 @@
 // src/screens/Dashboard.tsx
 import { useState, useMemo } from 'react';
-import { Star, ArrowLeft, Search, X, LayoutList, Columns2, ArrowRight, CheckSquare, FileText, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Star, ArrowLeft, Search, X, LayoutList, Columns2, ArrowRight, CheckSquare, FileText, ArrowUpDown, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
 import type { Candidate, Bucket, JobDescription } from '../types';
 import VirtualBucket from '../components/VirtualBucket';
 
@@ -10,6 +10,7 @@ interface DashboardProps {
     onSelectCandidate: (id: string) => void;
     onUpdateCandidates: (candidates: Candidate[]) => void;
     onProceedToShortlist: () => void;
+    onViewOverrides: () => void;
     onBack: () => void;
     roleName?: string;
 
@@ -32,7 +33,7 @@ const BUCKET_CONFIG = {
 };
 
 export default function Dashboard({
-    candidates, jd, onSelectCandidate, onUpdateCandidates, onProceedToShortlist, onBack, roleName,
+    candidates, jd, onSelectCandidate, onUpdateCandidates, onProceedToShortlist, onViewOverrides, onBack, roleName,
     search, setSearch, bucketFilter, setBucketFilter, minScore, setMinScore, minExp, setMinExp,
     seniority, setSeniority, domain, setDomain, edu, setEdu, referralOnly, setReferralOnly, view, setView
 }: DashboardProps) {
@@ -169,6 +170,18 @@ export default function Dashboard({
                             >
                                 <FileText size={14} /> View JD Reference
                             </button>
+
+                            {/* View Overrides button — only when overrides exist */}
+                            {candidates.some(c => c.overriddenBucket !== undefined) && (
+                                <button
+                                    className="btn-secondary"
+                                    onClick={onViewOverrides}
+                                    style={{ fontSize: 13, padding: '8px 16px', borderColor: 'var(--accent-amber)', color: 'var(--accent-amber)' }}
+                                    id="view-overrides-btn"
+                                >
+                                    <RotateCcw size={14} /> View Overrides ({candidates.filter(c => c.overriddenBucket !== undefined).length})
+                                </button>
+                            )}
 
                             {shortlistConfirmed && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: 'var(--strong-text)', fontWeight: 600, padding: '6px 14px', background: 'var(--strong-bg)', border: '1px solid var(--strong-border)', borderRadius: 8 }}>

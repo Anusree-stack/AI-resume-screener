@@ -2,35 +2,43 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileText, X, ArrowLeft, CheckCircle2, Database, Zap, Users } from 'lucide-react';
+import type { JobDescription } from '../types';
 
 interface CVUploadProps {
     onNext: (files: File[]) => void;
     onBack: () => void;
+    activeJd?: JobDescription | null;
 }
 
-// Mock Action Center candidates
-const ACTION_CENTER_POOL = [
-    { name: 'Shreya Patil', role: 'SDE II at Flipkart', source: 'Action Center' },
-    { name: 'Rahul Verma', role: 'Senior Engineer at Zomato', source: 'Action Center' },
-    { name: 'Kavya Nair', role: 'Full-Stack Dev at Swiggy', source: 'Action Center' },
-    { name: 'Arjun Mehta', role: 'Tech Lead at Razorpay', source: 'Action Center' },
-    { name: 'Priya Sharma', role: 'Product Engineer at CRED', source: 'Action Center' },
-    { name: 'Deepak Kumar', role: 'SDE III at PhonePe', source: 'Action Center' },
-    { name: 'Ananya Singh', role: 'Backend Engineer at Zepto', source: 'Action Center' },
-    { name: 'Vikash Gupta', role: 'Cloud Architect at HCL', source: 'Action Center' },
-    { name: 'Neha Joshi', role: 'Senior Dev at Paytm', source: 'Action Center' },
-    { name: 'Harsh Malhotra', role: 'Platform Engineer at InMobi', source: 'Action Center' },
-    { name: 'Sonal Tiwari', role: 'Data Engineer at Dunzo', source: 'Action Center' },
-    { name: 'Rohan Saxena', role: 'SDE II at Ola', source: 'Action Center' },
-];
-
-export default function CVUpload({ onNext, onBack }: CVUploadProps) {
+export default function CVUpload({ onNext, onBack, activeJd }: CVUploadProps) {
     const [files, setFiles] = useState<{ name: string; size: number; source?: string }[]>([]);
     const [actionCenterTab, setActionCenterTab] = useState(false);
-    const [acSelected, setAcSelected] = useState<Set<string>>(new Set());
     const [acImported, setAcImported] = useState(false);
-    // NOTE: acImported is intentionally false by default. The banner only appears
-    // after user explicitly imports from the Action Center tab.
+
+    // Processing simulation state
+    const [simulating, setSimulating] = useState(false);
+    const [simProgress, setSimProgress] = useState(0);
+    const [simStage, setSimStage] = useState('');
+
+    const jdCount = activeJd?.applicationCount ?? 0;
+
+    // Build the Action Center pool based on JD count (show up to 12 named + rest as count)
+    const ACTION_CENTER_NAMED = [
+        { name: 'Shreya Patil', role: 'SDE II at Flipkart', source: 'Action Center' },
+        { name: 'Rahul Verma', role: 'Senior Engineer at Zomato', source: 'Action Center' },
+        { name: 'Kavya Nair', role: 'Full-Stack Dev at Swiggy', source: 'Action Center' },
+        { name: 'Arjun Mehta', role: 'Tech Lead at Razorpay', source: 'Action Center' },
+        { name: 'Priya Sharma', role: 'Product Engineer at CRED', source: 'Action Center' },
+        { name: 'Deepak Kumar', role: 'SDE III at PhonePe', source: 'Action Center' },
+        { name: 'Ananya Singh', role: 'Backend Engineer at Zepto', source: 'Action Center' },
+        { name: 'Vikash Gupta', role: 'Cloud Architect at HCL', source: 'Action Center' },
+        { name: 'Neha Joshi', role: 'Senior Dev at Paytm', source: 'Action Center' },
+        { name: 'Harsh Malhotra', role: 'Platform Engineer at InMobi', source: 'Action Center' },
+        { name: 'Sonal Tiwari', role: 'Data Engineer at Dunzo', source: 'Action Center' },
+        { name: 'Rohan Saxena', role: 'SDE II at Ola', source: 'Action Center' },
+    ];
+
+    const [acSelected, setAcSelected] = useState<Set<string>>(new Set());
 
     const onDrop = useCallback((accepted: File[]) => {
         setFiles(prev => [...prev, ...accepted.map(f => ({ name: f.name, size: f.size }))]);
@@ -43,10 +51,7 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
     });
 
     const removeFile = (name: string) => setFiles(prev => prev.filter(f => f.name !== name));
-    const clearAllFiles = () => {
-        setFiles([]);
-        setAcImported(false); // also hide the success banner when files are cleared
-    };
+    const clearAllFiles = () => { setFiles([]); setAcImported(false); };
     const formatBytes = (bytes: number) => bytes > 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${(bytes / 1024).toFixed(0)} KB`;
 
     const toggleAcCandidate = (name: string) => {
@@ -57,11 +62,33 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
         });
     };
     const selectAllAc = () => {
-        if (acSelected.size === ACTION_CENTER_POOL.length) setAcSelected(new Set());
-        else setAcSelected(new Set(ACTION_CENTER_POOL.map(c => c.name)));
+        if (acSelected.size === ACTION_CENTER_NAMED.length) setAcSelected(new Set());
+        else setAcSelected(new Set(ACTION_CENTER_NAMED.map(c => c.name)));
     };
-    const importFromAC = () => {
-        const newFiles = ACTION_CENTER_POOL
+
+    // Import all JD applicationCount resumes from Action Center
+    const importAllFromAC = () => {
+        const count = jdCount > 0 ? jdCount : ACTION_CENTER_NAMED.length;
+        // Show 12 named candidates + bulk remainder
+        const namedFiles = ACTION_CENTER_NAMED.map(c => ({
+            name: `${c.name.replace(/ /g, '_')}_resume.pdf`,
+            size: 450000 + Math.random() * 300000,
+            source: 'Action Center',
+        }));
+        const bulkCount = Math.max(0, count - ACTION_CENTER_NAMED.length);
+        const bulkFiles = Array(bulkCount).fill(null).map((_, i) => ({
+            name: `ac_candidate_${i + 13}_resume.pdf`,
+            size: 380000 + Math.random() * 420000,
+            source: 'Action Center',
+        }));
+        setFiles([...namedFiles, ...bulkFiles]);
+        setAcImported(true);
+        setActionCenterTab(false);
+        setAcSelected(new Set());
+    };
+
+    const importSelectedFromAC = () => {
+        const newFiles = ACTION_CENTER_NAMED
             .filter(c => acSelected.has(c.name))
             .map(c => ({ name: `${c.name.replace(/ /g, '_')}_resume.pdf`, size: 450000 + Math.random() * 300000, source: 'Action Center' }));
         setFiles(prev => [...prev, ...newFiles]);
@@ -73,33 +100,115 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
     const totalCount = files.length;
     const canProcess = totalCount > 0;
 
+    // Simulate processing with stages reflecting exact count
+    const runSimulation = () => {
+        const n = totalCount;
+        setSimulating(true);
+        setSimProgress(0);
+        setSimStage(`Fetching ${n} resumes from source…`);
+
+        const stages = [
+            { pct: 15, label: `Fetching ${n} resumes from source…`, delay: 600 },
+            { pct: 35, label: `Parsing ${n} resume documents…`, delay: 900 },
+            { pct: 60, label: `Extracting skills & experience…`, delay: 800 },
+            { pct: 82, label: `Running AI scoring on ${n} profiles…`, delay: 1000 },
+            { pct: 95, label: `Ranking and bucketing candidates…`, delay: 700 },
+            { pct: 100, label: `Done — ${n} profiles scored & ranked`, delay: 500 },
+        ];
+
+        let elapsed = 0;
+        stages.forEach(({ pct, label, delay }) => {
+            elapsed += delay;
+            setTimeout(() => {
+                setSimProgress(pct);
+                setSimStage(label);
+                if (pct === 100) {
+                    setTimeout(() => {
+                        setSimulating(false);
+                        onNext(files as unknown as File[]);
+                    }, 600);
+                }
+            }, elapsed);
+        });
+    };
+
     const tabStyle = (active: boolean): React.CSSProperties => ({
-        flex: 1,
-        padding: '12px',
+        flex: 1, padding: '12px',
         background: active ? 'var(--bg-card)' : 'transparent',
         border: 'none',
         borderBottom: active ? '2px solid var(--accent-purple)' : '2px solid transparent',
         color: active ? 'var(--accent-purple)' : 'var(--text-muted)',
-        fontSize: 13,
-        fontWeight: active ? 600 : 500,
-        cursor: 'pointer',
-        fontFamily: 'Inter, sans-serif',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 7,
+        fontSize: 13, fontWeight: active ? 600 : 500,
+        cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
         transition: 'all 120ms ease',
     });
 
+    // ── Processing overlay ──────────────────────────────────────────────────
+    if (simulating) {
+        return (
+            <div style={{
+                minHeight: 'calc(100vh - 60px)', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', background: 'var(--bg-primary)',
+            }}>
+                <div className="card screen-fade" style={{ padding: '48px 56px', minWidth: 480, textAlign: 'center' }}>
+                    <div style={{
+                        width: 72, height: 72, borderRadius: 20,
+                        background: 'var(--accent-purple-dim)', border: '1px solid var(--border-glow)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px',
+                    }}>
+                        <Zap size={32} color="var(--accent-purple)" />
+                    </div>
+                    <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>AI Screening in Progress</h2>
+                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 32, lineHeight: 1.6 }}>
+                        {simStage}
+                    </p>
+
+                    {/* Progress bar */}
+                    <div style={{
+                        height: 8, background: 'var(--bg-secondary)', borderRadius: 100,
+                        overflow: 'hidden', marginBottom: 12,
+                    }}>
+                        <div style={{
+                            height: '100%', width: `${simProgress}%`,
+                            background: 'linear-gradient(90deg, var(--accent-purple), hsl(270,80%,70%))',
+                            borderRadius: 100, transition: 'width 600ms cubic-bezier(0.4,0,0.2,1)',
+                        }} />
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-purple)' }}>
+                        {simProgress}%
+                    </div>
+
+                    {/* Mini log */}
+                    <div style={{
+                        marginTop: 28, padding: '12px 16px', borderRadius: 10,
+                        background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)',
+                        textAlign: 'left',
+                    }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Processing Log</div>
+                        {[
+                            simProgress >= 15 && `✓ ${totalCount} resumes fetched from source`,
+                            simProgress >= 35 && `✓ Document parsing complete`,
+                            simProgress >= 60 && `✓ Skills & experience extracted`,
+                            simProgress >= 82 && `✓ AI scoring model applied`,
+                            simProgress >= 95 && `✓ Candidate ranking complete`,
+                            simProgress >= 100 && `✓ ${totalCount} profiles ready for review`,
+                        ].filter(Boolean).map((msg, i) => (
+                            <div key={i} style={{ fontSize: 12, color: 'var(--accent-green)', padding: '2px 0', fontFamily: 'monospace' }}>{msg as string}</div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div style={{ minHeight: 'calc(100vh - 60px)', background: 'var(--bg-primary)' }}>
-            {/* Sticky top bar with process button */}
+            {/* Sticky top bar */}
             <div style={{
                 position: 'sticky', top: 60, zIndex: 40,
-                background: 'var(--bg-card)',
-                borderBottom: '1px solid var(--border-subtle)',
-                padding: '12px 40px',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: 'var(--bg-card)', borderBottom: '1px solid var(--border-subtle)',
+                padding: '12px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 backdropFilter: 'blur(12px)',
             }}>
                 <div>
@@ -114,13 +223,12 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
                     )}
                     <button
                         className="btn-primary"
-                        onClick={() => onNext(files as unknown as File[])}
+                        onClick={runSimulation}
                         disabled={!canProcess}
                         style={{ fontSize: 13.5, padding: '10px 24px' }}
                         id="cv-process-btn"
                     >
-                        <Zap size={15} />
-                        Run AI Screening
+                        <Zap size={15} /> Run AI Screening
                     </button>
                 </div>
             </div>
@@ -128,13 +236,9 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
             <div style={{ maxWidth: 820, margin: '0 auto', padding: '36px 40px 80px' }}>
                 {/* Source Tabs */}
                 <div style={{
-                    display: 'flex',
-                    borderRadius: '12px 12px 0 0',
-                    border: '1px solid var(--border-subtle)',
-                    borderBottom: 'none',
-                    overflow: 'hidden',
-                    background: 'var(--bg-secondary)',
-                    marginBottom: 0,
+                    display: 'flex', borderRadius: '12px 12px 0 0',
+                    border: '1px solid var(--border-subtle)', borderBottom: 'none',
+                    overflow: 'hidden', background: 'var(--bg-secondary)',
                 }}>
                     <button style={tabStyle(!actionCenterTab)} onClick={() => setActionCenterTab(false)} id="tab-upload">
                         <Upload size={14} /> Upload Files
@@ -146,7 +250,7 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
                             background: 'var(--accent-purple-dim)', color: 'var(--accent-purple)',
                             fontSize: 10, fontWeight: 700, border: '1px solid var(--border-glow)',
                         }}>
-                            {ACTION_CENTER_POOL.length} available
+                            {jdCount > 0 ? `${jdCount} available` : `${ACTION_CENTER_NAMED.length} available`}
                         </span>
                     </button>
                 </div>
@@ -160,13 +264,10 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
                                 id="cv-dropzone"
                                 style={{
                                     border: `2px dashed ${isDragActive ? 'var(--accent-purple)' : 'var(--border-subtle)'}`,
-                                    borderRadius: 12,
-                                    padding: '48px 32px',
-                                    textAlign: 'center',
+                                    borderRadius: 12, padding: '48px 32px', textAlign: 'center',
                                     cursor: 'pointer',
                                     background: isDragActive ? 'var(--accent-purple-dim)' : 'var(--bg-secondary)',
-                                    transition: 'all 0.2s ease',
-                                    marginBottom: 20,
+                                    transition: 'all 0.2s ease', marginBottom: 20,
                                 }}
                             >
                                 <input {...getInputProps()} />
@@ -187,21 +288,21 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
                             </div>
 
                             {/* Demo loader */}
-                            {files.length === 0 && (
+                            {files.length === 0 && jdCount > 0 && (
                                 <div style={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
                                     padding: '13px 20px', borderRadius: 10,
                                     background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)',
                                 }}>
                                     <Zap size={14} color="var(--accent-purple)" />
-                                    <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Want to see enterprise scale?</span>
+                                    <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Want to load all resumes for this role?</span>
                                     <button
                                         className="btn-ghost"
-                                        onClick={() => setFiles(Array(850).fill(null).map((_, i) => ({ name: `candidate_resume_${i + 1}.pdf`, size: Math.floor(Math.random() * 800000) + 200000 })))}
+                                        onClick={importAllFromAC}
                                         style={{ color: 'var(--accent-purple)', fontSize: 13, fontWeight: 600 }}
                                         id="load-demo-btn"
                                     >
-                                        Load 850 demo resumes →
+                                        Load {jdCount} resumes →
                                     </button>
                                 </div>
                             )}
@@ -214,15 +315,29 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
                             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-secondary)' }}>
                                 <div>
                                     <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Microsoft Action Center — Candidate Pool</div>
-                                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Candidates in your ATS matched to this role's criteria</div>
+                                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                                        {jdCount > 0
+                                            ? `${jdCount} candidates matched to this role — import all or select specific profiles`
+                                            : "Candidates in your ATS matched to this role's criteria"}
+                                    </div>
                                 </div>
                                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                    {jdCount > 0 && (
+                                        <button
+                                            className="btn-primary"
+                                            onClick={importAllFromAC}
+                                            style={{ fontSize: 12, padding: '7px 16px', background: 'var(--strong-text)' }}
+                                            id="ac-import-all-btn"
+                                        >
+                                            <Users size={13} /> Import All {jdCount}
+                                        </button>
+                                    )}
                                     <button className="btn-ghost" style={{ fontSize: 12 }} onClick={selectAllAc} id="ac-select-all">
-                                        {acSelected.size === ACTION_CENTER_POOL.length ? 'Deselect All' : 'Select All'}
+                                        {acSelected.size === ACTION_CENTER_NAMED.length ? 'Deselect All' : 'Select Named'}
                                     </button>
                                     <button
-                                        className="btn-primary"
-                                        onClick={importFromAC}
+                                        className="btn-secondary"
+                                        onClick={importSelectedFromAC}
                                         disabled={acSelected.size === 0}
                                         style={{ fontSize: 12, padding: '7px 16px' }}
                                         id="ac-import-btn"
@@ -233,25 +348,19 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
                                 </div>
                             </div>
                             <div style={{ maxHeight: 380, overflowY: 'auto' }}>
-                                {ACTION_CENTER_POOL.map(c => (
+                                {ACTION_CENTER_NAMED.map(c => (
                                     <div
                                         key={c.name}
                                         className="table-row"
                                         onClick={() => toggleAcCandidate(c.name)}
                                         style={{
                                             display: 'flex', alignItems: 'center', gap: 14,
-                                            padding: '12px 20px',
-                                            borderBottom: '1px solid var(--border-subtle)',
+                                            padding: '12px 20px', borderBottom: '1px solid var(--border-subtle)',
                                             cursor: 'pointer',
                                             background: acSelected.has(c.name) ? 'var(--accent-purple-dim)' : undefined,
                                         }}
                                     >
-                                        <input
-                                            type="checkbox"
-                                            checked={acSelected.has(c.name)}
-                                            readOnly
-                                            style={{ cursor: 'pointer', accentColor: 'var(--accent-purple)' }}
-                                        />
+                                        <input type="checkbox" checked={acSelected.has(c.name)} readOnly style={{ cursor: 'pointer', accentColor: 'var(--accent-purple)' }} />
                                         <div style={{
                                             width: 34, height: 34, borderRadius: 10,
                                             background: 'var(--accent-purple-dim)',
@@ -264,12 +373,14 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
                                             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{c.name}</div>
                                             <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{c.role}</div>
                                         </div>
-                                        <span style={{
-                                            fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 100,
-                                            background: 'var(--bg-secondary)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)',
-                                        }}>ACTION CENTER</span>
+                                        <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 100, background: 'var(--bg-secondary)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>ACTION CENTER</span>
                                     </div>
                                 ))}
+                                {jdCount > ACTION_CENTER_NAMED.length && (
+                                    <div style={{ padding: '12px 20px', fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-subtle)' }}>
+                                        + {jdCount - ACTION_CENTER_NAMED.length} more candidates available — use "Import All {jdCount}" to include them
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -282,7 +393,7 @@ export default function CVUpload({ onNext, onBack }: CVUploadProps) {
                         background: 'var(--strong-bg)', border: '1px solid var(--strong-border)',
                         display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--strong-text)',
                     }}>
-                        <CheckCircle2 size={15} /> Candidates imported from Microsoft Action Center successfully.
+                        <CheckCircle2 size={15} /> {totalCount} candidates imported from Microsoft Action Center. Ready to screen.
                     </div>
                 )}
 

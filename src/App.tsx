@@ -1,5 +1,5 @@
 // src/App.tsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import './index.css';
 import type { AppScreen, Candidate, JobDescription, Bucket } from './types';
 import { jdLibraryBase } from './mockData';
@@ -12,6 +12,7 @@ import Processing from './screens/Processing';
 import Dashboard from './screens/Dashboard';
 import CandidateDetail from './screens/CandidateDetail';
 import Shortlist from './screens/Shortlist';
+import OverrideAudit from './screens/OverrideAudit';
 
 export default function App() {
   const [screen, setScreen] = useState<AppScreen>('home');
@@ -19,9 +20,19 @@ export default function App() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
 
-  // JD list is mutable state so newly created JDs appear on Home immediately
-  const [jds, setJds] = useState<JobDescription[]>(jdLibraryBase);
+  // JD list — seeded from localStorage, persisted on every change (Bug 4)
+  const [jds, setJds] = useState<JobDescription[]>(() => {
+    try {
+      const saved = localStorage.getItem('talentiq_jds');
+      return saved ? JSON.parse(saved) : jdLibraryBase;
+    } catch { return jdLibraryBase; }
+  });
   const [activeJd, setActiveJd] = useState<JobDescription | null>(null);
+
+  // Persist JD list to localStorage on every change
+  useEffect(() => {
+    localStorage.setItem('talentiq_jds', JSON.stringify(jds));
+  }, [jds]);
 
   // Pre-build the candidate store once from the base JDs
   // When new JDs are published they won't have pre-built pools — we generate on demand via Processing
@@ -146,6 +157,7 @@ export default function App() {
         <CVUpload
           onNext={handleCVUploadNext}
           onBack={() => setScreen('jd-setup')}
+          activeJd={activeJd}
         />
       )}
 
@@ -160,6 +172,7 @@ export default function App() {
           onSelectCandidate={handleSelectCandidate}
           onUpdateCandidates={setCandidates}
           onProceedToShortlist={() => setScreen('shortlist')}
+          onViewOverrides={() => setScreen('override-audit')}
           onBack={() => setScreen('home')}
           roleName={activeJd?.title}
           search={dashboardSearch} setSearch={setDashboardSearch}
@@ -188,7 +201,16 @@ export default function App() {
           candidates={candidates}
           onBack={() => setScreen('dashboard')}
           onRemove={handleRemoveFromShortlist}
+          onUpdateCandidates={setCandidates}
           roleName={activeJd?.title}
+        />
+      )}
+
+      {screen === 'override-audit' && (
+        <OverrideAudit
+          candidates={candidates}
+          roleName={activeJd?.title}
+          onBack={() => setScreen('dashboard')}
         />
       )}
     </div>

@@ -33,8 +33,10 @@ export interface Candidate {
     compositeScore: number;   // 0–100
     bucket: Bucket;
     overriddenBucket?: Bucket;
-    overrideReason?: string;
-    overrideNote?: string;
+    overrideReason?: string;        // Primary reason label (e.g. "Domain Expertise")
+    overrideJustification?: string; // Recruiter free-text justification
+    overrideNote?: string;          // Legacy — kept for compat
+    overrideAt?: string;            // ISO timestamp of override
 
     dimensions: ScoreDimension[];
     mustHaveViolations: string[];
@@ -84,4 +86,5 @@ export type AppScreen =
     | 'processing'
     | 'dashboard'
     | 'candidate-detail'
-    | 'shortlist';
+    | 'shortlist'
+    | 'override-audit';
