@@ -1,6 +1,6 @@
 // src/screens/JDSetup.tsx
 import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Plus, X, Sparkles, Briefcase, MapPin, Clock } from 'lucide-react';
+import { Plus, X, Sparkles, Briefcase, MapPin, Clock } from 'lucide-react';
 import type { JobDescription } from '../types';
 
 // Skills Repository — comprehensive master list
