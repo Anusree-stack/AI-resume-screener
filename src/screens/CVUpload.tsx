@@ -65,8 +65,6 @@ export default function CVUpload({ onNext, onBack, activeJd }: CVUploadProps) {
         setFiles(allFiles);
         setAcImported(true);
         setActionCenterTab(false);
-        // Proceed immediately to next screen
-        onNext(allFiles as unknown as File[]);
     };
 
     const totalCount = files.length;
