@@ -172,7 +172,6 @@ export default function Shortlist({ candidates, onBack, onRemove, onUpdateCandid
                                                 id={`shortlist-check-${candidate.id}`}
                                             />
 
-                                            {/* Rank */}
                                             <div style={{
                                                 width: 28, height: 28, borderRadius: 8, flexShrink: 0,
                                                 background: i === 0 ? 'linear-gradient(135deg, var(--accent-amber), hsl(50,95%,60%))' : 'var(--bg-secondary)',
@@ -181,7 +180,7 @@ export default function Shortlist({ candidates, onBack, onRemove, onUpdateCandid
                                                 color: i === 0 ? 'hsl(30,60%,20%)' : 'var(--text-muted)',
                                                 border: `1px solid ${i === 0 ? 'transparent' : 'var(--border-subtle)'}`,
                                             }}>
-                                                #{i + 1}
+                                                #{candidate.globalRank}
                                             </div>
 
                                             <ScoreRing score={candidate.compositeScore} size={46} strokeWidth={4} showLabel={false} />
