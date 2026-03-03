@@ -348,7 +348,7 @@ export default function CandidateDetail({ candidate, jd, onBack, onUpdate }: Can
                                 </div>
                             </div>
                             <div style={{ marginTop: 20 }}>
-                                <p style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 12 }}>Matched Skills</p>
+                                <p style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 12 }}>Candidate Skills</p>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                                     {candidate.skills.map(s => <span key={s} className="tag" style={{ fontSize: 11 }}>{s}</span>)}
                                 </div>

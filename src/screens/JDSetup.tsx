@@ -348,8 +348,6 @@ export default function JDSetup({ onSave, initialJd }: JDSetupProps) {
                 backdropFilter: 'blur(12px)',
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--text-muted)', fontSize: 13 }}>
-                    <ArrowLeft size={14} />
-                    <span>Creating a new role</span>
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
                     {/* Save as Draft */}
