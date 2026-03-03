@@ -15,8 +15,9 @@ import Shortlist from './screens/Shortlist';
 import OverrideAudit from './screens/OverrideAudit';
 
 // Bump this whenever stored data shape changes so browsers flush stale localStorage
-const CACHE_VERSION = 'v3-profiles-2026-03-01-v5';
+const CACHE_VERSION = 'v3-profiles-2026-03-01';
 
+const BUCKET_TIER: Record<string, number> = { strong: 0, potential: 1, low: 2 };
 export default function App() {
   const [screen, setScreen] = useState<AppScreen>('home');
   const [uploadedFileCount, setUploadedFileCount] = useState(0);
@@ -138,6 +139,18 @@ export default function App() {
     setCandidates(prev => prev.map((c: Candidate) => c.id === id ? { ...c, isShortlisted: false } : c));
   };
 
+  const rankedCandidates = useMemo(() => {
+    return [...candidates]
+      .sort((a, b) => {
+        const bktA = a.overriddenBucket ?? a.bucket;
+        const bktB = b.overriddenBucket ?? b.bucket;
+        const tierDiff = (BUCKET_TIER[bktA] ?? 3) - (BUCKET_TIER[bktB] ?? 3);
+        if (tierDiff !== 0) return tierDiff;
+        return b.compositeScore - a.compositeScore;
+      })
+      .map((c, i) => ({ ...c, globalRank: i + 1 }));
+  }, [candidates]);
+
   // Reset filters when switching roles to avoid stale state
   const resetFilters = () => {
     setDashboardSearch('');
@@ -199,7 +212,7 @@ export default function App() {
 
       {screen === 'dashboard' && (
         <Dashboard
-          candidates={candidates}
+          candidates={rankedCandidates}
           jd={activeJd}
           onSelectCandidate={handleSelectCandidate}
           onUpdateCandidates={setCandidates}
@@ -231,7 +244,7 @@ export default function App() {
 
       {screen === 'shortlist' && (
         <Shortlist
-          candidates={candidates}
+          candidates={rankedCandidates}
           onBack={() => setScreen('dashboard')}
           onRemove={handleRemoveFromShortlist}
           onUpdateCandidates={setCandidates}
@@ -241,7 +254,7 @@ export default function App() {
 
       {screen === 'override-audit' && (
         <OverrideAudit
-          candidates={candidates}
+          candidates={rankedCandidates}
           roleName={activeJd?.title}
           onBack={() => setScreen('dashboard')}
         />

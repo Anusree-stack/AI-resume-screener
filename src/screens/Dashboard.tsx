@@ -79,22 +79,8 @@ export default function Dashboard({
         setTimeout(() => setShortlistConfirmed(false), 3500);
     };
 
-    const BUCKET_TIER: Record<string, number> = { strong: 0, potential: 1, low: 2 };
-
-    const candidatesWithGlobalRank = useMemo(() => {
-        return [...candidates]
-            .sort((a, b) => {
-                const bktA = a.overriddenBucket ?? a.bucket;
-                const bktB = b.overriddenBucket ?? b.bucket;
-                const tierDiff = (BUCKET_TIER[bktA] ?? 3) - (BUCKET_TIER[bktB] ?? 3);
-                if (tierDiff !== 0) return tierDiff;
-                return b.compositeScore - a.compositeScore;
-            })
-            .map((c, i) => ({ ...c, globalRank: i + 1 }));
-    }, [candidates]);
-
     const filteredCandidates = useMemo(() =>
-        candidatesWithGlobalRank
+        candidates
             .filter(c => {
                 const matchSearch = !search.trim() || c.name.toLowerCase().includes(search.toLowerCase()) || c.currentRole.toLowerCase().includes(search.toLowerCase()) || c.skills.some(s => s.toLowerCase().includes(search.toLowerCase()));
                 const matchScore = c.compositeScore >= minScore;
@@ -112,7 +98,7 @@ export default function Dashboard({
                 const matchReferral = !referralOnly || c.isReferral;
                 return matchSearch && matchScore && matchExp && matchBucket && matchSeniority && matchDomain && matchEdu && matchReferral;
             }),
-        [candidatesWithGlobalRank, search, minScore, minExp, bucketFilter, seniority, domain, edu, referralOnly]
+        [candidates, search, minScore, minExp, bucketFilter, seniority, domain, edu, referralOnly]
     );
 
     const getBucketCandidates = (bucket: Bucket) => filteredCandidates.filter(c => (c.overriddenBucket ?? c.bucket) === bucket);
