@@ -174,11 +174,11 @@ export default function Shortlist({ candidates, onBack, onRemove, onUpdateCandid
 
                                             <div style={{
                                                 width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-                                                background: i === 0 ? 'linear-gradient(135deg, var(--accent-amber), hsl(50,95%,60%))' : 'var(--bg-secondary)',
+                                                background: 'var(--bg-secondary)',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                 fontSize: 12, fontWeight: 800,
-                                                color: i === 0 ? 'hsl(30,60%,20%)' : 'var(--text-muted)',
-                                                border: `1px solid ${i === 0 ? 'transparent' : 'var(--border-subtle)'}`,
+                                                color: 'var(--text-muted)',
+                                                border: '1px solid var(--border-subtle)',
                                             }}>
                                                 #{candidate.globalRank}
                                             </div>
